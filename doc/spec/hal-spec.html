@@ -2,7 +2,7 @@
 <HTML
 ><HEAD
 ><TITLE
->HAL 0.4.0 Specification</TITLE
+>HAL 0.4.1.snapshot20041116 Specification</TITLE
 ><META
 NAME="GENERATOR"
 CONTENT="Modular DocBook HTML Stylesheet Version 1.7"></HEAD
@@ -24,7 +24,7 @@ CLASS="TITLEPAGE"
 CLASS="title"
 ><A
 NAME="AEN2"
->HAL 0.4.0 Specification</A
+>HAL 0.4.1.snapshot20041116 Specification</A
 ></H1
 ><H3
 CLASS="author"
@@ -51,7 +51,7 @@ HREF="mailto:david@fubar.dk"
 ></DIV
 ><SPAN
 CLASS="releaseinfo"
->Version 0.4.0<BR></SPAN
+>Version 0.4.1.snapshot20041116<BR></SPAN
 ><HR></DIV
 ><DIV
 CLASS="TOC"
@@ -634,7 +634,7 @@ CLASS="CALSTABLE"
 ></TR
 ><TR
 ><TD
->0.4.0</TD
+>0.4.1.snapshot20041116</TD
 ><TD
 >&nbsp;</TD
 ><TD
@@ -6874,6 +6874,12 @@ CLASS="programlisting"
 	&#60;merge key="storage.policy.should_mount" type="bool"&#62;true&#60;/merge&#62;
       &#60;/match&#62;
     &#60;/match&#62;
+    &#60;!-- Also add SCSI optical drives --&#62;
+    &#60;match key="storage.bus" string="scsi"&#62;
+      &#60;match key="storage.drive_type" string="cdrom"&#62;
+        &#60;merge key="storage.policy.should_mount" type="bool"&#62;true&#60;/merge&#62;
+      &#60;/match&#62;
+    &#60;/match&#62;
 
     &#60;!-- Handle drives with non-partitioned media  --&#62;
     &#60;match key="storage.no_partitions_hint" bool="true"&#62;
@@ -6881,7 +6887,6 @@ CLASS="programlisting"
       &#60;match key="storage.drive_type" string="cdrom"&#62;
 	&#60;merge key="storage.policy.mount_filesystem" type="string"&#62;auto&#60;/merge&#62;
 	&#60;merge key="storage.policy.desired_mount_point" type="string"&#62;cdrom&#60;/merge&#62;
-	&#60;merge key="storage.policy.mount_option.ro" type="bool"&#62;true&#60;/merge&#62;
 	&#60;match key="storage.cdrom.cdr" bool="true"&#62;
 	  &#60;merge key="storage.policy.desired_mount_point" type="string"&#62;cdrecorder&#60;/merge&#62;
 	&#60;/match&#62;
@@ -6966,11 +6971,11 @@ CLASS="programlisting"
 	       volumes smaller than 2GB --&#62;
 	  &#60;match key="volume.size" compare_lt="2147483648"&#62;
 	    &#60;match key="@block.storage_device:storage.hotpluggable" bool="true"&#62;
-	      &#60;merge key="volume.policy.mount_option.async" type="bool"&#62;true&#60;/merge&#62;
+	      &#60;merge key="volume.policy.mount_option.sync" type="bool"&#62;true&#60;/merge&#62;
 	      &#60;merge key="volume.policy.mount_option.noatime" type="bool"&#62;true&#60;/merge&#62;
 	    &#60;/match&#62;
 	    &#60;match key="@block.storage_device:storage.removable" bool="true"&#62;
-	      &#60;merge key="volume.policy.mount_option.async" type="bool"&#62;true&#60;/merge&#62;
+	      &#60;merge key="volume.policy.mount_option.sync" type="bool"&#62;true&#60;/merge&#62;
 	      &#60;merge key="volume.policy.mount_option.noatime" type="bool"&#62;true&#60;/merge&#62;
 	    &#60;/match&#62;
 	  &#60;/match&#62;
@@ -7011,10 +7016,20 @@ CLASS="programlisting"
 	    &#60;match key="volume.partition.msdos_part_table_type" int="0x0e"&#62;
 	      &#60;merge key="volume.policy.should_mount" type="bool"&#62;true&#60;/merge&#62;
 	    &#60;/match&#62;
-	  &#60;/match&#62;
-
-	  
+	  &#60;/match&#62;	  
 	&#60;/match&#62;
+      &#60;/match&#62;
+    &#60;/match&#62;
+    
+  &#60;/device&#62;
+
+  &#60;!-- Dont want to mount non-hotpluggable fixed disks since ideraid
+       detection isnt complete as hald wrongly detects e.g. partitions
+       from some IDE RAID controllers --&#62;
+  &#60;device&#62;
+    &#60;match key="storage.hotpluggable" bool="false"&#62;
+      &#60;match key="storage.removable" bool="false"&#62;
+	&#60;merge key="storage.policy.should_mount" type="bool"&#62;false&#60;/merge&#62;
       &#60;/match&#62;
     &#60;/match&#62;
   &#60;/device&#62;

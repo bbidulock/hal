@@ -71,8 +71,6 @@
  * @{
  */
 
-static void etc_mtab_process_all_block_devices (dbus_bool_t force);
-
 static char *block_class_compute_udi (HalDevice * d, int append_num);
 
 #if 0
@@ -265,6 +263,15 @@ block_class_visit (ClassDeviceHandler *self,
 		goto out;
 	}
 
+	/* Never add e.g. /dev/hdd4 as child of /dev/hdd if /dev/hdd is without partitions (e.g. zip disks) */
+	if (hal_device_has_property (parent, "storage.no_partitions_hint")) {
+		if (hal_device_property_get_bool (parent, "storage.no_partitions_hint")) {
+			hal_device_store_remove (hald_get_tdl (), d);
+			d = NULL;
+			goto out;			
+		}
+	}
+
 	class_device_got_parent_device (hald_get_tdl (), parent, cad);
 
 out:
@@ -376,6 +383,8 @@ cdrom_get_properties (HalDevice *d, const char *device_file)
 static void
 force_unmount (HalDevice * d)
 {
+	const char *storudi;
+	HalDevice *stordev;
 	const char *device_file;
 	const char *device_mount_point;
 	const char *umount_argv[4] = { "/bin/umount", "-l", NULL, NULL };
@@ -384,8 +393,19 @@ force_unmount (HalDevice * d)
 	int umount_exitcode;
 
 	device_file = hal_device_property_get_string (d, "block.device");
-	device_mount_point =
-	    hal_device_property_get_string (d, "volume.mount_point");
+	device_mount_point = hal_device_property_get_string (d, "volume.mount_point");
+
+	/* Only attempt to 'umount -l' if some hal policy piece are performing policy on the device */
+	storudi = hal_device_property_get_string (d, "block.storage_device");
+	if (storudi == NULL)
+		return;
+	stordev = hal_device_store_find (hald_get_gdl (), storudi);
+	if (stordev == NULL)
+		return;
+	HAL_INFO (("foo = %d", hal_device_property_get_bool (stordev, "storage.policy.should_mount")));
+	if ((!hal_device_has_property (stordev, "storage.policy.should_mount")) ||
+	    (!hal_device_property_get_bool (stordev, "storage.policy.should_mount")))
+		return;
 
 	umount_argv[2] = device_file;
 
@@ -948,7 +968,7 @@ detect_media (HalDevice * d, dbus_bool_t force_poll)
 
 	child = get_child_device_gdl (d);
 	if (child == NULL) {
-		get_child_device_tdl (d);
+		child = get_child_device_tdl (d);
 	}
 	if (child != NULL) {
 		return FALSE;
@@ -2020,6 +2040,7 @@ static dbus_bool_t have_setup_watcher = FALSE;
 static gboolean
 mtab_handle_storage (HalDevice *d)
 {
+	const char *device_file;
 	HalDevice *child;
 	int major, minor;
 	dbus_bool_t found_mount_point;
@@ -2037,11 +2058,15 @@ mtab_handle_storage (HalDevice *d)
 
 	major = hal_device_property_get_int (d, "block.major");
 	minor = hal_device_property_get_int (d, "block.minor");
+	device_file = hal_device_property_get_string (d, "block.device");
+
 
 	/* See if we already got children */
 	child = get_child_device_gdl (d);
-	if (child == NULL)
-		get_child_device_tdl (d);
+
+	if (child == NULL) {
+		child = get_child_device_tdl (d);
+	}
 
 	/* Search all mount points */
 	found_mount_point = FALSE;
@@ -2049,8 +2074,13 @@ mtab_handle_storage (HalDevice *d)
 
 		mp = &mount_points[i];
 
-		if (mp->major != major || mp->minor != minor)
-			continue;
+		if (strcmp (device_file, mp->device) == 0) {
+			/* looks good */
+		} else {
+			/* device file don't match; try matching up major/minor numbers */
+			if (mp->major != major || mp->minor != minor)
+				continue;
+		}
 
 		if (child != NULL ) {
 			found_mount_point = TRUE;
@@ -2073,6 +2103,7 @@ mtab_handle_storage (HalDevice *d)
 static gboolean
 mtab_handle_volume (HalDevice *d)
 {
+	const char *device_file;
 	int major, minor;
 	dbus_bool_t found_mount_point;
 	struct mount_point_s *mp;
@@ -2082,6 +2113,7 @@ mtab_handle_volume (HalDevice *d)
 
 	major = hal_device_property_get_int (d, "block.major");
 	minor = hal_device_property_get_int (d, "block.minor");
+	device_file = hal_device_property_get_string (d, "block.device");
 
 	/* these are handled in mtab_handle_storage */
 	storudi = hal_device_property_get_string (d, "block.storage_device");
@@ -2095,36 +2127,27 @@ mtab_handle_volume (HalDevice *d)
 	found_mount_point = FALSE;
 	for (i = 0; i < num_mount_points; i++) {
 		mp = &mount_points[i];
-			
-		if (mp->major == major && mp->minor == minor) {
+
+	
+		/* match on both device file and major/minor numbers */
+		if ((strcmp (device_file, mp->device) == 0) || (mp->major == major && mp->minor == minor)) {
 			const char *existing_block_device;
 			dbus_bool_t was_mounted;
 
 			device_property_atomic_update_begin ();
 
-			existing_block_device =
-				hal_device_property_get_string (d,
-								"block.device");
+			existing_block_device = hal_device_property_get_string (d, "block.device");
 
-			was_mounted =
-				hal_device_property_get_bool (d,
-							      "volume.is_mounted");
+			was_mounted = hal_device_property_get_bool (d, "volume.is_mounted");
 
 			/* Yay! Found a mount point; set properties accordingly */
-			hal_device_property_set_string (d,
-							"volume.mount_point",
-							mp->mount_point);
-			hal_device_property_set_string (d, "volume.fstype",
-							mp->fs_type);
-			hal_device_property_set_bool (d,
-						      "volume.is_mounted",
-						      TRUE);
+			hal_device_property_set_string (d, "volume.mount_point", mp->mount_point);
+			hal_device_property_set_string (d, "volume.fstype", mp->fs_type);
+			hal_device_property_set_bool (d, "volume.is_mounted", TRUE);
 
 			/* only overwrite block.device if it's not set */
-			if (existing_block_device == NULL ||
-			    (existing_block_device != NULL &&
-			     strcmp (existing_block_device,
-				     "") == 0)) {
+			if (existing_block_device == NULL || (existing_block_device != NULL &&
+			     strcmp (existing_block_device, "") == 0)) {
 				hal_device_property_set_string (d,
 								"block.device",
 								mp->
@@ -2239,7 +2262,7 @@ mtab_foreach_device (HalDeviceStore *store, HalDevice *d,
  *
  *  @param  force               Force reading of mtab
  */
-static void
+void
 etc_mtab_process_all_block_devices (dbus_bool_t force)
 {
 	/* Start or continue watching /etc */

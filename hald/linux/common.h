@@ -93,6 +93,8 @@ void drivers_collect (const char *bus_name);
 
 dbus_bool_t got_parent (const char *sysfs_path);
 
+void etc_mtab_process_all_block_devices (dbus_bool_t force);
+
 extern char sysfs_mount_path[SYSFS_PATH_MAX];
 
 
