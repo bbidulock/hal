@@ -1924,8 +1924,10 @@ etc_mtab_process_line (char *s)
 	mount_points[num_mount_points].minor = minor;
 	strncpy (mount_points[num_mount_points].device, device,
 		 MOUNT_POINT_STRING_SIZE);
-	strncpy (mount_points[num_mount_points].mount_point, mount_point,
-		 MOUNT_POINT_STRING_SIZE);
+	p = g_strcompress(mount_point);
+	strncpy (mount_points[num_mount_points].mount_point, p, 
+		MOUNT_POINT_STRING_SIZE);
+	g_free(p);
 	strncpy (mount_points[num_mount_points].fs_type, fs_type,
 		 MOUNT_POINT_STRING_SIZE);
 

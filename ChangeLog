@@ -1,4 +1,21 @@
-2004-12-10  David Zeuthen  <david@fubar.dk>
+2004-12-31  David Zeuthen  <davidz@redhat.com>
+
+	* hald/linux/block_class_device.c (etc_mtab_process_line): Several
+	characters in mountpoints in /etc/mtab are encoded in octal form
+	(space, tab, newline etc). Current hal uses that directly which
+	confuses several other tools in the stack. Attached patch puts it
+	back in plain text again. Patch from Sjoerd Simons <sjoerd@luon.net>.
+
+
+2004-12-15  David Zeuthen  <davidz@redhat.com>
+
+	* fdi/20freedesktop/usb-zip-drives.fdi: Only match on actual
+	harddisks to avoid wrong detection of e.g. "Iomega ZipCD 650 USB CDRW"
+	drives (Red Hat bug #143834)
+
+	* fdi/20freedesktop/ide-drives.fdi: ditto
+
+2004-12-10  David Zeuthen  <davidz@redhat.com>
 
 	* hald/linux/net_class_device.c (mii_get_link): Close the fd for link
 	detection before getting the rate	
