@@ -209,7 +209,7 @@ mii_get_rate (HalDevice *d)
 	g_free (ifr);
 }
 
-static void
+static dbus_bool_t
 mii_get_link (HalDevice *d)
 {
 	const char *ifname;
@@ -218,6 +218,7 @@ mii_get_link (HalDevice *d)
 	gboolean new_ioctl_nums;
 	int res;
 	guint16 status_word;
+	dbus_bool_t ret;
 
 	HAL_INFO (("Entering"));
 
@@ -227,7 +228,7 @@ mii_get_link (HalDevice *d)
 	if (sockfd < 0) {
 		HAL_ERROR (("cannot open socket on interface %s; errno=%d",
 			    ifname, errno));
-		return;
+		return FALSE;
 	}
 
 	/* reserve some extra space as the sk98lin driver seems to segfault otherwise */
@@ -244,7 +245,7 @@ mii_get_link (HalDevice *d)
 			    ifr->ifr_name, strerror (errno)));
 		close (sockfd);
 		g_free (ifr);
-		return;
+		return FALSE;
 	}
 
 	/* Refer to http://www.scyld.com/diag/mii-status.html for
@@ -266,12 +267,17 @@ mii_get_link (HalDevice *d)
 	res = mdio_read (sockfd, ifr, 1, new_ioctl_nums, &status_word);
 	res = mdio_read (sockfd, ifr, 1, new_ioctl_nums, &status_word);
 
+	ret = FALSE;
+
 	if (res < 0)
 		HAL_WARNING (("Error reading link info"));
-	else if ((status_word & 0x0016) == 0x0004)
+	else if ((status_word & 0x0016) == 0x0004) {
 		hal_device_property_set_bool (d, "net.80203.link", TRUE);
-	else
+		ret = TRUE;
+	} else {
 		hal_device_property_set_bool (d, "net.80203.link", FALSE);
+		ret = TRUE;
+	}
 
 	close (sockfd);
 	g_free (ifr);
@@ -279,6 +285,7 @@ mii_get_link (HalDevice *d)
 	/* Also get the link rate */
 	mii_get_rate (d);
 
+	return ret;
 }
 
 static void
@@ -636,9 +643,16 @@ net_class_pre_process (ClassDeviceHandler *self,
 				hal_device_property_set_bool (d, "net.80203.link", have_link != 0);
 				HAL_INFO (("Assuming link speed is 100Mbps"));
 				hal_device_property_set_uint64 (d, "net.80203.rate", 100 * 1000 * 1000);
+
+				hal_device_property_set_bool (d, "net.80203.can_detect_link", TRUE);
+			} else {
+				hal_device_property_set_bool (d, "net.80203.can_detect_link", FALSE);
 			}
 #else /* SYSFS_CARRIER_ENABLE */
-			mii_get_link (d);
+			if (mii_get_link (d))
+				hal_device_property_set_bool (d, "net.80203.can_detect_link", TRUE);
+			else
+				hal_device_property_set_bool (d, "net.80203.can_detect_link", FALSE);
 #endif /* SYSFS_CARRIER_ENABLE */
 		}
 	}

@@ -1,5 +1,12 @@
 2005-01-27  David Zeuthen  <davidz@redhat.com>
 
+	* hald/linux/net_class_device.c (net_class_pre_process): Add the
+	net.80203.can_detect_link property
+	(mii_get_link): Return a boolean whether we succeeded in determining
+	link status
+
+2005-01-27  David Zeuthen  <davidz@redhat.com>
+
 	* libhal-storage/libhal-storage.c (mopts_collect): There was
 	a problem with trailing commas if the last option was removed.
 	Reported by Sebastian Dransfeld <sebastid@stud.ntnu.no>.
