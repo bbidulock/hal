@@ -1,5 +1,19 @@
 
 ==========
+HAL 0.4.6 "It can only be attributable to human error."
+==========
+
+Released Jan 20, 2005
+
+ - Fix strange crasher in libsysfs on certain ppc platforms
+ - Update local libsysfs copy to 1.2.0
+ - Add compile time option to use 2.6.10 link detection features rather
+   than talking directly to the mii registers
+ - Fix off by one in VFAT label probing (Kay Sievers)
+ - Skip NTFS signed volume and label probing fixes (Kay Sievers)
+ - Use mount option iocharset=utf8 for vfat volumes
+
+==========
 HAL 0.4.5 "It's going to go 100% failure in 72 hours."
 ==========
 

@@ -105,7 +105,7 @@ static int dir_subdir_name_equal(void *a, void *b)
 void sysfs_close_attribute(struct sysfs_attribute *sysattr)
 {
 	if (sysattr != NULL) {
-		if (sysattr->value != NULL)
+		if (sysattr->value != NULL && sysattr->value[0] != '\0') /* davidz: latter is a stopgap fix */
 			free(sysattr->value);
 		free(sysattr);
 	}
@@ -513,9 +513,9 @@ struct sysfs_link *sysfs_open_link(const char *linkpath)
 	safestrcpy(ln->path, linkpath);
 	if ((sysfs_get_name_from_path(linkpath, ln->name, SYSFS_NAME_LEN)) != 0
 	    || (sysfs_get_link(linkpath, ln->target, SYSFS_PATH_MAX)) != 0) {
+		sysfs_close_link(ln);
 		errno = EINVAL;
 		dprintf("Invalid link path %s\n", linkpath);
-		free (ln);
 		return NULL;
 	}
 
@@ -885,7 +885,8 @@ struct sysfs_attribute *sysfs_get_directory_attribute
 	attr = (struct sysfs_attribute *)dlist_find_custom
 			(dir->attributes, attrname, dir_attribute_name_equal);
 	if (attr != NULL) {
-		if ((sysfs_read_attribute(attr)) != 0) {
+		if ((attr->method & SYSFS_METHOD_SHOW) &&
+			(sysfs_read_attribute(attr)) != 0) {
 			dprintf("Error reading attribute %s\n", attr->name);
 			return NULL;
 		}

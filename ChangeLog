@@ -1,3 +1,23 @@
+2005-01-20  David Zeuthen  <davidz@redhat.com>
+
+	* NEWS: Update for 0.4.6
+
+	* configure.in: Bump to 0.4.6
+
+2005-01-20  David Zeuthen  <davidz@redhat.com>
+
+	* hald/linux/libsysfs/sysfs_dir.c (sysfs_close_attribute): Add
+	stopgap fix to not free unallocated memory. This is a *workaround*
+	to not make hald crash on some PPC hardware. Reported by Joseph
+	E. Sacco, Ph.D. <joseph_sacco@comcast.net> who helped test this.
+
+	* fdi/90defaultpolicy/storage-policy.fdi: Add mount option 
+	iocharset=utf8 for vfat volumes
+
+2005-01-20  David Zeuthen  <davidz@redhat.com>
+
+	* hald/linux/libsysfs: Update libsysfs to upstream version 1.2.0
+
 2005-01-17  David Zeuthen  <davidz@redhat.com>
 
 	* hald/linux/net_class_device.c (mii_get_rate): Add debug statements

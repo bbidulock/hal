@@ -163,6 +163,11 @@
 	      <merge key="volume.policy.mount_option.noatime" type="bool">true</merge>
 	    </match>
 	  </match>
+
+	  <!-- Use UTF-8 charset for vfat -->
+	  <match key="volume.fstype" string="vfat">
+	    <merge key="volume.policy.mount_option.iocharset=utf8" type="bool">true</merge>
+	  </match>
 	  
 	  <!-- whitelist of partition table id's, if from a msdos partition table -->
 	  <match key="volume.partition.msdos_part_table_type" exists="true">
