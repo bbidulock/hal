@@ -417,7 +417,7 @@ link_detection_data_ready (GIOChannel *channel, GIOCondition cond,
 
 	if (cond & ~(G_IO_IN | G_IO_PRI)) {
 		HAL_ERROR (("Error occurred on netlink socket"));
-		return FALSE;
+		return TRUE;
 	}
 
 	fd = g_io_channel_unix_get_fd (channel);
@@ -431,11 +431,11 @@ link_detection_data_ready (GIOChannel *channel, GIOCondition cond,
 				   (struct sockaddr*)&nladdr, &nladdrlen);
 		if (nladdrlen != sizeof(nladdr)) {
 			HAL_ERROR(("Bad address size reading netlink socket"));
-			return FALSE;
+			return TRUE;
 		}
 		if (nladdr.nl_pid) {
 			HAL_ERROR(("Spoofed packet received on netlink socket"));
-			return FALSE;
+			return TRUE;
 		}
 		if (bytes_read > 0)
 			total_read += bytes_read;
@@ -443,7 +443,7 @@ link_detection_data_ready (GIOChannel *channel, GIOCondition cond,
 
 	if (bytes_read < 0 && errno != EAGAIN) {
 		HAL_ERROR (("Error reading data off netlink socket"));
-		return FALSE;
+		return TRUE;
 	}
 
 	if (total_read > 0) {
@@ -467,7 +467,7 @@ link_detection_data_ready (GIOChannel *channel, GIOCondition cond,
 		if (offset < total_read &&
 		    !VALID_NLMSG (hdr, total_read - offset)) {
 			HAL_ERROR (("Packet too small or truncated"));
-			return FALSE;
+			return TRUE;
 		}
 	}
 

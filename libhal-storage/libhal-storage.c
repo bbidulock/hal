@@ -1510,7 +1510,12 @@ mopts_collect (LibHalContext *hal_ctx, const char *namespace, int namespace_len,
 
 					end = strchr (location, ',');
 					if (end == NULL) {
-						location[0] = '\0';
+						/* pointer arithmetic; uhh */
+						if (location > options_string) {
+							location[-1] = '\0'; /* uh, remove trailing comma */
+						} else {
+							location[0] = '\0';
+						}
 					} else {
 						strcpy (location, end + 1); /* skip the extra comma */
 					}
