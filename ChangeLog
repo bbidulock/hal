@@ -21,6 +21,14 @@
 	(process_next_callout): Setup timeout for callouts - set to
 	ten seconds
 
+2005-01-12  Kay Sievers  <kay.sievers@vrfy.org>
+
+	* hald/linux/volume_id/volume_id.c: (probe_iso9660): Patch from
+	Leon Breedt <bitserf@gmail.com> which fixes a bug with the recently
+	added joliet descriptor reading. Bug discovery and initial fix from
+	foser <foser@gentoo.org>.
+	* hald/linux/volume_id/volume_id.h: Next version.
+
 2005-01-11  David Zeuthen  <davidz@redhat.com>
 
 	* hald/callout.c: Simplify a lot more by demanding that callouts
