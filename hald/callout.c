@@ -217,8 +217,8 @@ callout_timeout_handler (gpointer data)
 	
 	HAL_WARNING (("Timeout (%d ms) for callout %s", CALLOUT_TIMEOUT, callout->filename));
 
-	/* kill the child.. kill it! */
-	kill (callout->pid, SIGTERM);
+	/* kill the child.. kill it the hard way */
+	kill (callout->pid, SIGKILL);
 
 	active_callout = NULL;
 

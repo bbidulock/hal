@@ -1,5 +1,10 @@
 2005-01-12  David Zeuthen  <davidz@redhat.com>
 
+	* hald/callout.c (callout_timeout_handler): Be tough and kill
+	the misbehaving child the hard way - suggestion from Joe Shaw.
+
+2005-01-12  David Zeuthen  <davidz@redhat.com>
+
 	* hald/linux/osspec.c (HOTPLUG_TIMEOUT): Increase to 25 seconds
 	to better cope with callouts timeout of 10 seconds
 
