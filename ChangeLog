@@ -1,5 +1,11 @@
 2005-01-21  David Zeuthen  <davidz@redhat.com>
 
+	* hald/linux/usb_bus_device.c (usb_device_pre_process): Interface
+	class is in hexadecimal, not decimal. Reported by Paul Ionescu
+	<i_p_a_u_l@yahoo.com>.
+
+2005-01-21  David Zeuthen  <davidz@redhat.com>
+
 	* tools/fstab-sync.c (remove_udi): Check for return value to
 	avoid dereferencing a NULL pointer
 

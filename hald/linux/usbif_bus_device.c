@@ -222,13 +222,13 @@ usbif_device_pre_process (BusDeviceHandler *self,
 
 		if (strcmp (attr_name, "bInterfaceClass") == 0)
 			hal_device_property_set_int (d, "usb.interface.class",
-					     parse_dec (cur->value));
+					     parse_hex (cur->value));
 		else if (strcmp (attr_name, "bInterfaceSubClass") == 0)
 			hal_device_property_set_int (d, "usb.interface.subclass",
-					     parse_dec (cur->value));
+					     parse_hex (cur->value));
 		else if (strcmp (attr_name, "bInterfaceProtocol") == 0)
 			hal_device_property_set_int (d, "usb.interface.protocol",
-					     parse_dec (cur->value));
+					     parse_hex (cur->value));
 		else if (strcmp (attr_name, "bInterfaceNumber") == 0)
 			hal_device_property_set_int (d, "usb.interface.number",
 					     parse_dec (cur->value));
