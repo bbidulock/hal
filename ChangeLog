@@ -1,5 +1,11 @@
 2005-01-06  David Zeuthen  <davidz@redhat.com>
 
+	* libhal/libhal.c (hal_device_query_capability): Patch from Tim
+	Müller <t.i.m@zen.co.uk>. The attached patch fixes a small memory
+	leak in libhal's hal_device_query_capability().
+
+2005-01-06  David Zeuthen  <davidz@redhat.com>
+
 	* hald/linux/net_class_device.c (net_class_pre_process): Add some
 	fairly ugly code for checking in /proc/net/wireless whether an
 	interface is wireless since the 2.6.10 kernel appears not put the
