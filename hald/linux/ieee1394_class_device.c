@@ -73,16 +73,18 @@ ieee1394_class_pre_process (ClassDeviceHandler *self,
 	sysdevice = sysfs_get_classdev_device (class_device);
 	dlist_for_each_data (sysfs_get_device_attributes (sysdevice),
 			     cur, struct sysfs_attribute) {
-		int len, i;
+		int i;
 
 		if (sysfs_get_name_from_path (cur->path,
 					      attr_name,
 					      SYSFS_NAME_LEN) != 0)
 			continue;
 
+		if (cur->len <= 0)
+			continue;
+
 		/* strip whitespace */
-		len = strlen (cur->value);
-		for (i = len - 1; i >= 0 && isspace (cur->value[i]); --i)
+		for (i = cur->len - 1; i >= 0 && isspace (cur->value[i]); --i)
 			cur->value[i] = '\0';
 
 		if (strcmp (attr_name, "model_id") == 0) {

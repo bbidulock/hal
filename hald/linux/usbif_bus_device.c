@@ -190,7 +190,6 @@ usbif_device_pre_process (BusDeviceHandler *self,
 			  struct sysfs_device *device)
 {
 	int i;
-	int len;
 	struct sysfs_attribute *cur;
 	char attr_name[SYSFS_NAME_LEN];
 	const char *parent_udi;
@@ -213,9 +212,11 @@ usbif_device_pre_process (BusDeviceHandler *self,
 					      SYSFS_NAME_LEN) != 0)
 			continue;
 
+		if (cur->len <= 0)
+			continue;
+
 		/* strip whitespace */
-		len = strlen (cur->value);
-		for (i = len - 1; i > 0 && isspace (cur->value[i]); --i)
+		for (i = cur->len - 1; i >= 0 && isspace (cur->value[i]); --i)
 			cur->value[i] = '\0';
 
 		/*printf("attr_name=%s -> '%s'\n", attr_name, cur->value); */

@@ -812,7 +812,6 @@ usb_device_pre_process (BusDeviceHandler *self,
 	char *product_name_kernel = NULL;
 	char numeric_name[32];
 	struct sysfs_attribute *cur;
-	int len;
 
 	dlist_for_each_data (sysfs_get_device_attributes (device), cur,
 			     struct sysfs_attribute) {
@@ -822,9 +821,11 @@ usb_device_pre_process (BusDeviceHandler *self,
 					      SYSFS_NAME_LEN) != 0)
 			continue;
 
+		if (cur->len <= 0)
+			continue;
+
 		/* strip whitespace */
-		len = strlen (cur->value);
-		for (i = len - 1; i >= 0 && isspace (cur->value[i]); --i)
+		for (i = cur->len - 1; i >= 0 && isspace (cur->value[i]); --i)
 			cur->value[i] = '\0';
 
 		/*printf("attr_name=%s -> '%s'\n", attr_name, cur->value); */
@@ -839,8 +840,7 @@ usb_device_pre_process (BusDeviceHandler *self,
 		else if (strcmp (attr_name, "bMaxPower") == 0)
 			hal_device_property_set_int (d, "usb_device.max_power",
 					     parse_dec (cur->value));
-		else if (strcmp (attr_name, "serial") == 0
-			 && strlen (cur->value) > 0)
+		else if (strcmp (attr_name, "serial") == 0 && cur->len > 0)
 			hal_device_property_set_string (d, "usb_device.serial",
 						cur->value);
 		else if (strcmp (attr_name, "bmAttributes") == 0) {

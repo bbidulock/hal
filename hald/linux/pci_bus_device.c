@@ -393,7 +393,6 @@ pci_device_pre_process (BusDeviceHandler *self,
 			struct sysfs_device *device)
 {
 	int i;
-	int len;
 	int vendor_id = 0;
 	int product_id = 0;
 	int subsys_vendor_id = 0;
@@ -410,7 +409,7 @@ pci_device_pre_process (BusDeviceHandler *self,
 	dlist_for_each_data (sysfs_get_device_attributes (device), cur,
 			     struct sysfs_attribute) {
 
-		if (cur == NULL || cur->path == NULL || cur->value == NULL || strlen (cur->value) == 0)
+		if (cur == NULL || cur->path == NULL || cur->value == NULL || cur->len <= 0 || strlen (cur->value) == 0)
 			continue;
 
 		if (sysfs_get_name_from_path (cur->path,
@@ -419,8 +418,7 @@ pci_device_pre_process (BusDeviceHandler *self,
 			continue;
 
 		/* strip whitespace */
-		len = strlen (cur->value);
-		for (i = len - 1; isspace (cur->value[i]); --i)
+		for (i = cur->len - 1; i >= 0 && isspace (cur->value[i]); --i)
 			cur->value[i] = '\0';
 
 		/*printf("attr_name=%s -> '%s'\n", attr_name, cur->value); */

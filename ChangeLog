@@ -1,3 +1,22 @@
+2005-01-24  David Zeuthen  <david@fubar.dk>
+
+	* hald/linux/usb_bus_device.c (usb_device_pre_process): cur->len
+	may be zero so don't look at sysfs attributes in that case. From
+	Antti Andreimann <antti.andreimann@mail.ee>; RH bug 145921.
+
+	* hald/linux/ieee1394_host_class_device.c:
+	(ieee1394_host_class_pre_process): Same fix
+
+	* hald/linux/ieee1394_node_class_device.c:
+	(ieee1394_node_class_pre_process): Same fix
+
+	* hald/linux/ieee1394_class_device.c:
+	(ieee1394_class_pre_process): Same fix
+
+	* hald/linux/usbif_bus_device.c (usbif_device_pre_process): Same fix
+
+	* hald/linux/pci_bus_device.c (pci_device_pre_process): Same fix
+
 2005-01-21  David Zeuthen  <davidz@redhat.com>
 
 	* hald/linux/usb_bus_device.c (usb_device_pre_process): Interface
