@@ -1251,9 +1251,13 @@ static int probe_iso9660(struct volume_id *id, __u64 off)
 		return -1;
 
 	if (strncmp(is->iso.id, "CD001", 5) == 0) {
+		char root_label[VOLUME_ID_LABEL_SIZE+1];
 		int vd_offset;
 		int i;
 		int found_svd;
+
+		memset(root_label, 0, sizeof(root_label));
+		strncpy(root_label, is->iso.volume_id, sizeof(root_label)-1);
 
 		found_svd = 0;
 		vd_offset = ISO_VD_OFFSET;
@@ -1263,23 +1267,20 @@ static int probe_iso9660(struct volume_id *id, __u64 off)
 			if (is == NULL || is->iso.type == ISO_VD_END)
 				break;
 			if (is->iso.type == ISO_VD_SUPPLEMENTARY) {
-				dbg("found ISO supplementary VD at offset 0x%x", off + vd_offset);
+				dbg("found ISO supplementary VD at offset 0x%llx", off + vd_offset);
+				set_label_raw(id, is->iso.volume_id, 32);
+				set_label_unicode16(id, is->iso.volume_id, BE, 32);
 				found_svd = 1;
 				break;
 			}
 			vd_offset += ISO_SECTOR_SIZE;
 		}
 
-		if (!found_svd) {
-			is = (union iso_super_block *)
-			     get_buffer(id, off + ISO_SUPERBLOCK_OFFSET, 0x200);
-			if (is == NULL)
-				return -1;
-			set_label_raw(id, is->iso.volume_id, 32);
-			set_label_string(id, is->iso.volume_id, 32);
-		} else {
-			set_label_raw(id, is->iso.volume_id, 32);
-			set_label_unicode16(id, is->iso.volume_id, BE, 32);
+		if (!found_svd ||
+		    (found_svd && !strncmp(root_label, id->label, 16)))
+		{
+			set_label_raw(id, root_label, 32);
+			set_label_string(id, root_label, 32);
 		}
 		goto found;
 	}
