@@ -1,3 +1,9 @@
+2005-01-17  Kay Sievers  <kay.sievers@vrfy.org>
+
+	* hald/linux/volume_id/volume_id.c: (probe_vfat): Skip NTFS
+	signed volumes. Accept directory volume label entry only if the
+	entry has no cluster associated.
+
 2005-01-12  David Zeuthen  <david@fubar.dk>
 
 	* NEWS: Update for 0.4.5

@@ -859,6 +859,9 @@ static int probe_vfat(struct volume_id *id, __u64 off)
 	/* believe only that's fat, don't trust the version
 	 * the cluster_count will tell us
 	 */
+	if (strncmp(vs->sysid, "NTFS", 4) == 0)
+		return -1;
+
 	if (strncmp(vs->type.fat32.magic, "MSWIN", 5) == 0)
 		goto valid;
 
@@ -967,7 +970,8 @@ valid:
 		if (dir[i].name[0] == FAT_ENTRY_FREE)
 			continue;
 
-		if ((dir[i].attr & (FAT_ATTR_VOLUME_ID | FAT_ATTR_DIR)) == FAT_ATTR_VOLUME_ID) {
+		if (((dir[i].attr & (FAT_ATTR_VOLUME_ID | FAT_ATTR_DIR)) == FAT_ATTR_VOLUME_ID) &&
+		    dir[i].cluster_high == 0 && dir[i].cluster_low == 0) {
 			dbg("found ATTR_VOLUME_ID id in root dir");
 			label = dir[i].name;
 			break;
@@ -975,6 +979,10 @@ valid:
 
 		dbg("skip dir entry");
 	}
+
+	vs = (struct vfat_super_block *) get_buffer(id, off, 0x200);
+	if (vs == NULL)
+		return -1;
 
 	if (label != NULL && strncmp(label, "NO NAME    ", 11) != 0) {
 		set_label_raw(id, label, 11);
@@ -1026,7 +1034,8 @@ fat32:
 			if (dir[i].name[0] == FAT_ENTRY_FREE)
 				continue;
 
-			if ((dir[i].attr & (FAT_ATTR_VOLUME_ID | FAT_ATTR_DIR)) == FAT_ATTR_VOLUME_ID) {
+			if (((dir[i].attr & (FAT_ATTR_VOLUME_ID | FAT_ATTR_DIR)) == FAT_ATTR_VOLUME_ID) &&
+			    dir[i].cluster_high == 0 && dir[i].cluster_low == 0) {
 				dbg("found ATTR_VOLUME_ID id in root dir");
 				label = dir[i].name;
 				goto fat32_label;
@@ -1050,6 +1059,10 @@ fat32:
 		dbg("reached maximum follow count of root cluster chain, give up");
 
 fat32_label:
+	vs = (struct vfat_super_block *) get_buffer(id, off, 0x200);
+	if (vs == NULL)
+		return -1;
+
 	if (label != NULL && strncmp(label, "NO NAME    ", 11) != 0) {
 		set_label_raw(id, label, 11);
 		set_label_string(id, label, 11);
