@@ -1,3 +1,17 @@
+2005-03-28  David Zeuthen  <david@fubar.dk>
+
+	* hald/linux/osspec.c: Patch from Kay Sievers <kay.sievers@vrfy.org>
+	While playing around with hotplug event replay from initramfs, it
+	happens, that events are generated for devices HAL already knows
+	from its coldplug run. This leads to a lot of funny double entries
+	in the device store. :) We should prevent the device addition by
+	hotplug events if we already have one with the same sysfs-devpath.
+
+	* hald/device_info.c: Backport a memory leak fix from the new
+	development branch: Fix up error handling; remember to free the
+	XML_Parser context which fixes a 4.5MB memory leak on my system.
+	Verified by Timo Hoenig <thoenig@suse.de> to work.
+
 2005-02-26  David Zeuthen  <davidz@redhat.com>
 
 	* fdi/90defaultpolicy/storage-policy.fdi: Apply patch from Daniel

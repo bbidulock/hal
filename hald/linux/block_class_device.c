@@ -407,6 +407,12 @@ force_unmount (HalDevice * d)
 
 	umount_argv[2] = device_file;
 
+	HAL_INFO (("dumping device - device_mount_point=%s", device_mount_point));
+	HAL_INFO (("++++++++++++++++++++++++++++++++++++++++"));
+	hal_device_print (d);
+	HAL_INFO (("++++++++++++++++++++++++++++++++++++++++"));
+
+
 	if (hal_device_has_property (d, "block.is_volume") &&
 	    hal_device_property_get_bool (d, "block.is_volume") &&
 	    hal_device_property_get_bool (d, "volume.is_mounted") &&
@@ -464,6 +470,8 @@ force_unmount (HalDevice * d)
 			device_property_atomic_update_end ();
 */
 		}
+	} else {
+		HAL_INFO (("didn't want to unmount"));
 	}
 }
 
@@ -1975,6 +1983,8 @@ read_etc_mtab (dbus_bool_t force)
 
 	num_mount_points = 0;
 
+	HAL_INFO (("Reading mtab"));
+
 	fd = open ("/etc/mtab", O_RDONLY);
 
 	if (fd == -1) {
@@ -2008,7 +2018,7 @@ read_etc_mtab (dbus_bool_t force)
 	while (!feof (f)) {
 		if (fgets (buf, 256, f) == NULL)
 			break;
-		/*printf("got line: '%s'\n", buf); */
+		HAL_INFO (("mtab line: '%s'", buf));
 		etc_mtab_process_line (buf);
 	}
 
@@ -2129,6 +2139,8 @@ mtab_handle_volume (HalDevice *d)
 			hal_device_property_set_string (d, "volume.fstype", mp->fs_type);
 			hal_device_property_set_bool (d, "volume.is_mounted", TRUE);
 
+			HAL_INFO (("----- is_mounted = TRUE; mount_point=%s, device_file=%s", mp->mount_point, mp->device));
+
 			/* only overwrite block.device if it's not set */
 			if (existing_block_device == NULL || (existing_block_device != NULL &&
 			     strcmp (existing_block_device, "") == 0)) {
@@ -2176,6 +2188,8 @@ mtab_handle_volume (HalDevice *d)
 					      FALSE);
 		hal_device_property_set_string (d, "volume.mount_point",
 						"");
+
+		HAL_INFO (("----- is_mounted = FALSE; was_mounted=%s device_file=%s", was_mounted ? "TRUE" : "FALSE", mp->device));
 
 		device_property_atomic_update_end ();
 
@@ -2268,6 +2282,7 @@ etc_mtab_process_all_block_devices (dbus_bool_t force)
 		/*HAL_INFO (("processing /etc/mtab"));*/
 	}
 
+	HAL_INFO (("Checking mtab"));
 	hal_device_store_foreach (hald_get_gdl (), mtab_foreach_device, NULL);
 }
 
