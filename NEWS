@@ -6,6 +6,8 @@ HAL 0.4.7 "I'm afraid, Dave."
 Released Jan 24, 2005
 
  - Add support for PCMCIA cards if they are in sysfs (on 2.6.10-ish kernels)
+ - Don't attempt to access page 0x80 on USB Storage Devices as the
+   resulting INQUIRY crashes quite a few devices
  - Fix reporting of USB interface class
  - Make hald not crash if sysfs files are writable but not readable
  - Small h-d-m fix (Sjoerd Simons)
