@@ -774,6 +774,8 @@ static int probe_jfs(struct volume_id *id, __u64 off)
 #define FAT16_MAX			0xfff5
 #define FAT_ATTR_VOLUME_ID		0x08
 #define FAT_ATTR_DIR			0x10
+#define FAT_ATTR_LONG_NAME		0x0f
+#define FAT_ATTR_MASK			0x3f
 #define FAT_ENTRY_FREE			0xe5
 static int probe_vfat(struct volume_id *id, __u64 off)
 {
@@ -959,7 +961,7 @@ valid:
 
 	dir = (struct vfat_dir_entry*) buf;
 
-	for (i = 0; i <= root_dir_entries; i++) {
+	for (i = 0; i < root_dir_entries; i++) {
 		/* end marker */
 		if (dir[i].name[0] == 0x00) {
 			dbg("end of dir");
@@ -970,8 +972,15 @@ valid:
 		if (dir[i].name[0] == FAT_ENTRY_FREE)
 			continue;
 
-		if (((dir[i].attr & (FAT_ATTR_VOLUME_ID | FAT_ATTR_DIR)) == FAT_ATTR_VOLUME_ID) &&
-		    dir[i].cluster_high == 0 && dir[i].cluster_low == 0) {
+		/* long name */
+		if ((dir[i].attr & FAT_ATTR_MASK) == FAT_ATTR_LONG_NAME)
+			continue;
+
+		if ((dir[i].attr & (FAT_ATTR_VOLUME_ID | FAT_ATTR_DIR)) == FAT_ATTR_VOLUME_ID) {
+			/* labels do not have file data */
+			if (dir[i].cluster_high != 0 || dir[i].cluster_low != 0)
+				continue;
+
 			dbg("found ATTR_VOLUME_ID id in root dir");
 			label = dir[i].name;
 			break;
@@ -1023,7 +1032,7 @@ fat32:
 		count = buf_size / sizeof(struct vfat_dir_entry);
 		dbg("expected entries 0x%x", count);
 
-		for (i = 0; i <= count; i++) {
+		for (i = 0; i < count; i++) {
 			/* end marker */
 			if (dir[i].name[0] == 0x00) {
 				dbg("end of dir");
@@ -1034,8 +1043,15 @@ fat32:
 			if (dir[i].name[0] == FAT_ENTRY_FREE)
 				continue;
 
-			if (((dir[i].attr & (FAT_ATTR_VOLUME_ID | FAT_ATTR_DIR)) == FAT_ATTR_VOLUME_ID) &&
-			    dir[i].cluster_high == 0 && dir[i].cluster_low == 0) {
+			/* long name */
+			if ((dir[i].attr & FAT_ATTR_MASK) == FAT_ATTR_LONG_NAME)
+				continue;
+
+			if ((dir[i].attr & (FAT_ATTR_VOLUME_ID | FAT_ATTR_DIR)) == FAT_ATTR_VOLUME_ID) {
+				/* labels do not have file data */
+				if (dir[i].cluster_high != 0 || dir[i].cluster_low != 0)
+					continue;
+
 				dbg("found ATTR_VOLUME_ID id in root dir");
 				label = dir[i].name;
 				goto fat32_label;
