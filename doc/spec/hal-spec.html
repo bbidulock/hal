@@ -1,11 +1,11 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML
 ><HEAD
 ><TITLE
->HAL 0.4.1.snapshot20041116 Specification</TITLE
+>HAL 0.4.1 Specification</TITLE
 ><META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.7"></HEAD
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"></HEAD
 ><BODY
 CLASS="book"
 BGCOLOR="#FFFFFF"
@@ -24,7 +24,7 @@ CLASS="TITLEPAGE"
 CLASS="title"
 ><A
 NAME="AEN2"
->HAL 0.4.1.snapshot20041116 Specification</A
+>HAL 0.4.1 Specification</A
 ></H1
 ><H3
 CLASS="author"
@@ -51,7 +51,7 @@ HREF="mailto:david@fubar.dk"
 ></DIV
 ><SPAN
 CLASS="releaseinfo"
->Version 0.4.1.snapshot20041116<BR></SPAN
+>Version 0.4.1<BR></SPAN
 ><HR></DIV
 ><DIV
 CLASS="TOC"
@@ -634,7 +634,7 @@ CLASS="CALSTABLE"
 ></TR
 ><TR
 ><TD
->0.4.1.snapshot20041116</TD
+>0.4.1</TD
 ><TD
 >&nbsp;</TD
 ><TD
@@ -814,7 +814,7 @@ CLASS="literal"
       easily access the services offered by HAL. The D-BUS API is
       detailed in <A
 HREF="#dbus-api"
->the chapter called <I
+>the Chapter called <I
 >D-BUS Network API</I
 ></A
 >. Note that HAL doesn't
@@ -824,7 +824,7 @@ HREF="#dbus-api"
       environments, recommendations and best practises on how to
       enforce policy is discussed in <A
 HREF="#enforcing-policy"
->the chapter called <I
+>the Chapter called <I
 >Enforcing Policy</I
 ></A
 >.
@@ -929,7 +929,7 @@ CLASS="literal"
 	    or use another setuid mount wrapper.
 	    See <A
 HREF="#enforcing-policy"
->the chapter called <I
+>the Chapter called <I
 >Enforcing Policy</I
 ></A
 > for more details.
@@ -1010,13 +1010,13 @@ CLASS="literal"
 	checking the properties that export the USB vendor and product
 	identifiers.  See <A
 HREF="#device-capabilities"
->the chapter called <I
+>the Chapter called <I
 >Device Capabilities</I
 ></A
 > and
 	<A
 HREF="#device-properties"
->the chapter called <I
+>the Chapter called <I
 >Device Properties</I
 ></A
 > for details.
@@ -1164,7 +1164,7 @@ CLASS="literal"
 	administrator can edit. This specification is concerned with
 	precisely defining several properties; see <A
 HREF="#device-properties"
->the chapter called <I
+>the Chapter called <I
 >Device Properties</I
 ></A
 > and onwards for more
@@ -4587,7 +4587,7 @@ CLASS="literal"
 HREF="#fdi-example-6in1"
 >the Section called <I
 >Example: Card Reader</I
-> in the chapter called <I
+> in the Chapter called <I
 >Device Information Files</I
 ></A
 > for an example.
@@ -6756,7 +6756,7 @@ HREF="#device-properties-storage"
 CLASS="literal"
 >storage</TT
 > namespace</I
-> in the chapter called <I
+> in the Chapter called <I
 >Device Properties</I
 ></A
 > this device information
@@ -6821,7 +6821,7 @@ CLASS="literal"
 HREF="#properties-policy"
 >the Section called <I
 >Policy Properties</I
-> in the chapter called <I
+> in the Chapter called <I
 >Device Properties</I
 ></A
 > for details.
@@ -6912,10 +6912,29 @@ CLASS="programlisting"
 	  &#60;merge key="storage.policy.mount_option.fscontext=system_u:object_r:removable_t" type="bool"&#62;true&#60;/merge&#62;
 	&#60;/match&#62;
       &#60;/match&#62;
+
       &#60;!-- floppy drives --&#62;
       &#60;match key="storage.drive_type" string="floppy"&#62;
 	&#60;merge key="storage.policy.mount_filesystem" type="string"&#62;auto&#60;/merge&#62;
 	&#60;merge key="storage.policy.desired_mount_point" type="string"&#62;floppy&#60;/merge&#62;
+	&#60;match key="/org/freedesktop/Hal/devices/computer:linux.is_selinux_enabled" bool="true"&#62;
+	  &#60;merge key="storage.policy.mount_option.fscontext=system_u:object_r:removable_t" type="bool"&#62;true&#60;/merge&#62;
+	&#60;/match&#62;
+      &#60;/match&#62;
+
+      &#60;!-- zip drives --&#62;
+      &#60;match key="storage.drive_type" string="zip"&#62;
+	&#60;merge key="storage.policy.mount_filesystem" type="string"&#62;auto&#60;/merge&#62;
+	&#60;merge key="storage.policy.desired_mount_point" type="string"&#62;zip&#60;/merge&#62;
+	&#60;match key="/org/freedesktop/Hal/devices/computer:linux.is_selinux_enabled" bool="true"&#62;
+	  &#60;merge key="storage.policy.mount_option.fscontext=system_u:object_r:removable_t" type="bool"&#62;true&#60;/merge&#62;
+	&#60;/match&#62;
+      &#60;/match&#62;
+
+      &#60;!-- jaz drives --&#62;
+      &#60;match key="storage.drive_type" string="jaz"&#62;
+	&#60;merge key="storage.policy.mount_filesystem" type="string"&#62;auto&#60;/merge&#62;
+	&#60;merge key="storage.policy.desired_mount_point" type="string"&#62;jaz&#60;/merge&#62;
 	&#60;match key="/org/freedesktop/Hal/devices/computer:linux.is_selinux_enabled" bool="true"&#62;
 	  &#60;merge key="storage.policy.mount_option.fscontext=system_u:object_r:removable_t" type="bool"&#62;true&#60;/merge&#62;
 	&#60;/match&#62;
@@ -6935,6 +6954,11 @@ CLASS="programlisting"
 	       idedisk, scsidisk etc. --&#62;
 	  &#60;merge key="volume.policy.desired_mount_point" type="copy_property"&#62;@block.storage_device:storage.bus&#60;/merge&#62;
 	  &#60;append key="volume.policy.desired_mount_point" type="string"&#62;disk&#60;/append&#62;
+
+         &#60;!-- zip drives --&#62;
+         &#60;match key="storage.drive_type" string="zip"&#62;
+ 	   &#60;merge key="storage.policy.desired_mount_point" type="string"&#62;zip&#60;/merge&#62;
+         &#60;/match&#62;
 	  
           &#60;!-- Best: If available use filesystem label --&#62;
           &#60;match key="volume.label" empty="false"&#62;
@@ -7272,7 +7296,7 @@ NAME="dbus-api"
       a camera device, is outside the scope of the HAL daemon; see
       <A
 HREF="#using-devices"
->the chapter called <I
+>the Chapter called <I
 >Using devices</I
 ></A
 > for more information.
@@ -7744,7 +7768,7 @@ CLASS="literal"
 HREF="#properties-policy"
 >the Section called <I
 >Policy Properties</I
-> in the chapter called <I
+> in the Chapter called <I
 >Device Properties</I
 ></A
 >

@@ -1,5 +1,20 @@
 2004-11-30  David Zeuthen  <davidz@redhat.com>
 
+	* fdi/20freedesktop/ide-drives.fdi: Add blacklist for certain slave
+	IDE drives on Dell Laptops - stopgap solution for now (RH Bug #138148)
+
+	* fdi/20freedesktop/usb-zip-drives.fdi: Fix a syntax error
+
+	* hald/linux/osspec.c (compute_coldplug_visit_device): Don't spew
+	too much debug now that we ascent into the tree down to the leafs
+
+	* libhal-storage/libhal-storage.c (hal_drive_from_udi): Comment out
+	types for ZIP and JAZ drives since that will require ABI changes
+
+	* libhal-storage/libhal-storage.h: -do-
+
+2004-11-30  David Zeuthen  <davidz@redhat.com>
+
 	* hald/linux/osspec.c (compute_coldplug_visit_device): Descent down
 	the to leafs of the /sys/devices tree but dont follow symlinks - done
 	such that we can process sysfs trees with holes in them (cf. SCSI

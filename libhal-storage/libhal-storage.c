@@ -870,10 +870,12 @@ hal_drive_from_udi (LibHalContext *hal_ctx, const char *udi)
 			drive->type = HAL_DRIVE_TYPE_SMART_MEDIA;
 		} else if (strcmp (drive->type_textual, "sd_mmc") == 0) {
 			drive->type = HAL_DRIVE_TYPE_SD_MMC;
+/*
 		} else if (strcmp (drive->type_textual, "zip") == 0) {
 			drive->type = HAL_DRIVE_TYPE_ZIP;
 		} else if (strcmp (drive->type_textual, "jaz") == 0) {
 			drive->type = HAL_DRIVE_TYPE_JAZ;
+*/
 		} else {
 		        drive->type = HAL_DRIVE_TYPE_DISK; 
 		}

@@ -688,7 +688,7 @@ found:
 	/* visit children */
 	err = NULL;
 	if ((dir = g_dir_open (path, 0, &err)) == NULL) {
-		HAL_ERROR (("Unable to open directory: %s", path, err->message));
+		/*HAL_ERROR (("Unable to open directory: %s", path, err->message));*/
 		g_error_free (err);
 		goto error;
 	}
