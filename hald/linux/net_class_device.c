@@ -147,7 +147,7 @@ mii_get_rate (HalDevice *d)
 {
 	const char *ifname;
 	int sockfd;
-	struct ifreq ifr;
+	struct ifreq *ifr;
 	gboolean new_ioctl_nums;
 	int res;
 	guint16 link_word;
@@ -161,16 +161,20 @@ mii_get_rate (HalDevice *d)
 		return;
 	}
 
-	snprintf (ifr.ifr_name, IFNAMSIZ, ifname);
+	/* reserve some extra space as the sk98lin driver seems to segfault otherwise */
+	ifr = g_new0 (struct ifreq, 10);
 
-	if (ioctl (sockfd, 0x8947, &ifr) >= 0)
+	snprintf (ifr->ifr_name, IFNAMSIZ, ifname);
+
+	if (ioctl (sockfd, 0x8947, ifr) >= 0)
 		new_ioctl_nums = TRUE;
-	else if (ioctl (sockfd, SIOCDEVPRIVATE, &ifr) >= 0)
+	else if (ioctl (sockfd, SIOCDEVPRIVATE, ifr) >= 0)
 		new_ioctl_nums = FALSE;
 	else {
 		HAL_ERROR (("SIOCGMIIPHY on %s failed: %s",
-			    ifr.ifr_name, strerror (errno)));
+			    ifr->ifr_name, strerror (errno)));
 		close (sockfd);
+		g_free (ifr);
 		return;
 	}
 
@@ -187,7 +191,7 @@ mii_get_rate (HalDevice *d)
 	 * 0x0020  10baseT supported
 	 * 0x001F  Protocol selection bits, always 0x0001 for Ethernet.
 	 */
-	res = mdio_read (sockfd, &ifr, 5, new_ioctl_nums, &link_word);
+	res = mdio_read (sockfd, ifr, 5, new_ioctl_nums, &link_word);
 
 	if (res < 0) {
 		HAL_WARNING (("Error reading rate info"));
@@ -200,6 +204,7 @@ mii_get_rate (HalDevice *d)
 	}
 
 	close (sockfd);
+	g_free (ifr);
 }
 
 static void
@@ -207,7 +212,7 @@ mii_get_link (HalDevice *d)
 {
 	const char *ifname;
 	int sockfd;
-	struct ifreq ifr;
+	struct ifreq *ifr;
 	gboolean new_ioctl_nums;
 	int res;
 	guint16 status_word;
@@ -221,16 +226,20 @@ mii_get_link (HalDevice *d)
 		return;
 	}
 
-	snprintf (ifr.ifr_name, IFNAMSIZ, ifname);
+	/* reserve some extra space as the sk98lin driver seems to segfault otherwise */
+	ifr = g_new0 (struct ifreq, 10);
 
-	if (ioctl (sockfd, 0x8947, &ifr) >= 0)
+	snprintf (ifr->ifr_name, IFNAMSIZ, ifname);
+
+	if (ioctl (sockfd, 0x8947, ifr) >= 0)
 		new_ioctl_nums = TRUE;
-	else if (ioctl (sockfd, SIOCDEVPRIVATE, &ifr) >= 0)
+	else if (ioctl (sockfd, SIOCDEVPRIVATE, ifr) >= 0)
 		new_ioctl_nums = FALSE;
 	else {
 		HAL_ERROR (("SIOCGMIIPHY on %s failed: %s",
-			    ifr.ifr_name, strerror (errno)));
+			    ifr->ifr_name, strerror (errno)));
 		close (sockfd);
+		g_free (ifr);
 		return;
 	}
 
@@ -250,8 +259,8 @@ mii_get_link (HalDevice *d)
 	 */
 
 	/* We have to read it twice to clear any "sticky" bits */
-	res = mdio_read (sockfd, &ifr, 1, new_ioctl_nums, &status_word);
-	res = mdio_read (sockfd, &ifr, 1, new_ioctl_nums, &status_word);
+	res = mdio_read (sockfd, ifr, 1, new_ioctl_nums, &status_word);
+	res = mdio_read (sockfd, ifr, 1, new_ioctl_nums, &status_word);
 
 	if (res < 0)
 		HAL_WARNING (("Error reading link info"));
@@ -261,6 +270,7 @@ mii_get_link (HalDevice *d)
 		hal_device_property_set_bool (d, "net.80203.link", FALSE);
 
 	close (sockfd);
+	g_free (ifr);
 
 	/* Also get the link rate */
 	mii_get_rate (d);

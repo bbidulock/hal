@@ -1,5 +1,18 @@
 2005-01-03  David Zeuthen  <davidz@redhat.com>
 
+	* configure.in: Added it to ALL_LINGUAS
+
+	* po/it.po: Italien translation from Pier Luigi Fiorini
+	<pierluigi.fiorini@mockup.org>
+	
+2005-01-03  David Zeuthen  <davidz@redhat.com>
+
+	* hald/linux/net_class_device.c (mii_get_link, mii_get_rate): Allocate
+	the struct ifreq on the stack and reserve plenty of space; to work
+	around a crasher with the sk98lin driver. RH #142183
+
+2005-01-03  David Zeuthen  <davidz@redhat.com>
+
 	* hald/linux/block_class_device.c (detect_media): hald contains a
 	file descriptor leak that makes normal users unable to eject audio
 	CDs and other CDs/DVDs that does not contain normal filesystems.
