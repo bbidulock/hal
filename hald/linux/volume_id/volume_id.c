@@ -78,7 +78,7 @@
 /* size of superblock buffer, reiserfs block is at 64k */
 #define SB_BUFFER_SIZE				0x11000
 /* size of seek buffer 4k */
-#define SEEK_BUFFER_SIZE			0x1000
+#define SEEK_BUFFER_SIZE			0x10000
 
 
 static void set_label_raw(struct volume_id *id,
@@ -221,8 +221,10 @@ static __u8 *get_buffer(struct volume_id *id, __u64 off, unsigned int len)
 
 		return &(id->sbbuf[off]);
 	} else {
-		if (len > SEEK_BUFFER_SIZE)
-			len = SEEK_BUFFER_SIZE;
+		if (len > SEEK_BUFFER_SIZE) {
+			dbg("seek buffer too small %d", SEEK_BUFFER_SIZE);
+			return NULL;
+		}
 
 		/* get seek buffer */
 		if (id->seekbuf == NULL) {
@@ -232,8 +234,7 @@ static __u8 *get_buffer(struct volume_id *id, __u64 off, unsigned int len)
 		}
 
 		/* check if we need to read */
-		if ((off < id->seekbuf_off) ||
-		    ((off + len) > (id->seekbuf_off + id->seekbuf_len))) {
+		if ((off < id->seekbuf_off) || ((off + len) > (id->seekbuf_off + id->seekbuf_len))) {
 			dbg("read seekbuf off:0x%llx len:0x%x", off, len);
 			if (lseek(id->fd, off, SEEK_SET) == -1)
 				return NULL;
@@ -241,8 +242,10 @@ static __u8 *get_buffer(struct volume_id *id, __u64 off, unsigned int len)
 			dbg("got 0x%x (%i) bytes", buf_len, buf_len);
 			id->seekbuf_off = off;
 			id->seekbuf_len = buf_len;
-			if (buf_len < len)
+			if (buf_len < len) {
+				dbg("requested 0x%x bytes, got only 0x%x bytes", len, buf_len);
 				return NULL;
+			}
 		}
 
 		return &(id->seekbuf[off - id->seekbuf_off]);
@@ -769,7 +772,9 @@ static int probe_jfs(struct volume_id *id, __u64 off)
 
 #define FAT12_MAX			0xff5
 #define FAT16_MAX			0xfff5
-#define FAT_ATTR_VOLUME			0x08
+#define FAT_ATTR_VOLUME_ID		0x08
+#define FAT_ATTR_DIR			0x10
+#define FAT_ENTRY_FREE			0xe5
 static int probe_vfat(struct volume_id *id, __u64 off)
 {
 	struct vfat_super_block {
@@ -832,7 +837,7 @@ static int probe_vfat(struct volume_id *id, __u64 off)
 	__u16 dir_entries;
 	__u32 sect_count;
 	__u16 reserved;
-	__u16 fat_size;
+	__u32 fat_size;
 	__u32 root_cluster;
 	__u32 dir_size;
 	__u32 cluster_count;
@@ -959,12 +964,13 @@ valid:
 		}
 
 		/* empty entry */
-		if (dir[i].name[0] == 0xe5)
+		if (dir[i].name[0] == FAT_ENTRY_FREE)
 			continue;
 
-		if (dir[i].attr == FAT_ATTR_VOLUME) {
-			dbg("found ATTR_VOLUME id in root dir");
+		if ((dir[i].attr & (FAT_ATTR_VOLUME_ID | FAT_ATTR_DIR)) == FAT_ATTR_VOLUME_ID) {
+			dbg("found ATTR_VOLUME_ID id in root dir");
 			label = dir[i].name;
+			break;
 		}
 
 		dbg("skip dir entry");
@@ -1017,11 +1023,11 @@ fat32:
 			}
 
 			/* empty entry */
-			if (dir[i].name[0] == 0xe5)
+			if (dir[i].name[0] == FAT_ENTRY_FREE)
 				continue;
 
-			if (dir[i].attr == FAT_ATTR_VOLUME) {
-				dbg("found ATTR_VOLUME id in root dir");
+			if ((dir[i].attr & (FAT_ATTR_VOLUME_ID | FAT_ATTR_DIR)) == FAT_ATTR_VOLUME_ID) {
+				dbg("found ATTR_VOLUME_ID id in root dir");
 				label = dir[i].name;
 				goto fat32_label;
 			}
@@ -1047,7 +1053,7 @@ fat32_label:
 	if (label != NULL && strncmp(label, "NO NAME    ", 11) != 0) {
 		set_label_raw(id, label, 11);
 		set_label_string(id, label, 11);
-	} else if (strncmp(vs->type.fat32.label, "NO NAME    ", 11) == 0) {
+	} else if (strncmp(vs->type.fat32.label, "NO NAME    ", 11) != 0) {
 		set_label_raw(id, vs->type.fat32.label, 11);
 		set_label_string(id, vs->type.fat32.label, 11);
 	}
@@ -1247,7 +1253,7 @@ static int probe_iso9660(struct volume_id *id, __u64 off)
 	if (strncmp(is->iso.id, "CD001", 5) == 0) {
 		int vd_offset;
 		int i;
-		__u8 found_svd;
+		int found_svd;
 
 		found_svd = 0;
 		vd_offset = ISO_VD_OFFSET;
@@ -2012,21 +2018,37 @@ found:
 #define LARGEST_PAGESIZE			0x4000
 static int probe_swap(struct volume_id *id, __u64 off)
 {
-	const __u8 *sig;
+	struct swap_header_v1_2 {
+		__u8	bootbits[1024];
+		__u32	version;
+		__u32	last_page;
+		__u32	nr_badpages;
+		__u8	uuid[16];
+		__u8	volume_name[16];
+	} __attribute__((__packed__)) *sw;
+
+	const __u8 *buf;
 	unsigned int page;
 
-	/* huhh, the swap signature is on the end of the PAGE_SIZE */
+	/* the swap signature is at the end of the PAGE_SIZE */
 	for (page = 0x1000; page <= LARGEST_PAGESIZE; page <<= 1) {
-			sig = get_buffer(id, off + page-10, 10);
-			if (sig == NULL)
+			buf = get_buffer(id, off + page-10, 10);
+			if (buf == NULL)
 				return -1;
 
-			if (strncmp(sig, "SWAP-SPACE", 10) == 0) {
+			if (strncmp(buf, "SWAP-SPACE", 10) == 0) {
 				strcpy(id->type_version, "1");
 				goto found;
 			}
-			if (strncmp(sig, "SWAPSPACE2", 10) == 0) {
+
+			if (strncmp(buf, "SWAPSPACE2", 10) == 0) {
+				sw = (struct swap_header_v1_2 *) get_buffer(id, off, sizeof(struct swap_header_v1_2));
+				if (sw == NULL)
+					return -1;
 				strcpy(id->type_version, "2");
+				set_label_raw(id, sw->volume_name, 16);
+				set_label_string(id, sw->volume_name, 16);
+				set_uuid(id, sw->uuid, UUID_DCE);
 				goto found;
 			}
 	}

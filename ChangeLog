@@ -1,3 +1,13 @@
+2005-01-10  Kay Sievers  <kay.sievers@vrfy.org>
+
+	* hald/linux/volume_id/volume_id.c:
+	(get_buffer): Fail if the requested size can not be read.
+	(probe_vfat): Fix volume label attribute recognition.
+	(probe_iso9660): Switch bool to int.
+	(probe_swap): Add label/uuid support. My swap has now a name. :)
+
+	* hald/linux/volume_id/volume_id.h: Bump version.
+
 2005-01-07  David Zeuthen  <davidz@redhat.com>
 
 	* fdi/20freedesktop/ide-drives.fdi: Also check IDE floppies for whether
