@@ -1384,43 +1384,19 @@ block_class_pre_process (ClassDeviceHandler *self,
 	HAL_INFO (("Bus type is %s!",
 		   hal_device_property_get_string (parent, "info.bus")));
 
-	if (strcmp (hal_device_property_get_string (parent, "info.bus"),
-			    "ide") == 0) {
+	if (strcmp (hal_device_property_get_string (parent, "info.bus"), "ide") == 0) {
 		const char *ide_name;
 		char *model;
 		char *media;
 
+		/* Be conservative and don't poll IDE drives at all */
+		hal_device_property_set_bool (d, "storage.media_check_enabled", FALSE);
 
-		/* blacklist the broken ide-cs driver */
-		if (physdev != NULL) {
-			size_t len;
-			char buf[256];
-			const char *physdev_sysfs_path;
-			
-			snprintf (buf, 256, "%s/devices/ide", sysfs_mount_path);
-			len = strlen (buf);
-			
-			physdev_sysfs_path = hal_device_property_get_string (physdev, "linux.sysfs_path");
-			
-			if (strncmp (physdev_sysfs_path, buf, len) == 0) {
-				hal_device_property_set_bool (stordev, "storage.media_check_enabled", FALSE);
-			}
-			
-			HAL_INFO (("Working around broken ide-cs driver for %s", physdev->udi));
-		}
-
-
-		ide_name = get_last_element (hal_device_property_get_string
-					     (d, "linux.sysfs_path"));
-
+		ide_name = get_last_element (hal_device_property_get_string (d, "linux.sysfs_path"));
 		model = read_single_line ("/proc/ide/%s/model", ide_name);
 		if (model != NULL) {
-			hal_device_property_set_string (stordev,
-							"storage.model",
-							model);
-			hal_device_property_set_string (d, 
-							"info.product",
-							model);
+			hal_device_property_set_string (stordev, "storage.model", model);
+			hal_device_property_set_string (d, "info.product", model);
 		}
 
 		/* According to the function proc_ide_read_media() in 
@@ -1429,38 +1405,21 @@ block_class_pre_process (ClassDeviceHandler *self,
 		 * "UNKNOWN"
 		 */
 		
-		/** @todo Given floppy how
-		 *        do we determine it's LS120?
-		 */
-			
-		media = read_single_line ("/proc/ide/%s/media",
-					  ide_name);
+		media = read_single_line ("/proc/ide/%s/media", ide_name);
 		if (media != NULL) {
-			hal_device_property_set_string (stordev, 
-							"storage.drive_type",
-							media);
+			hal_device_property_set_string (stordev, "storage.drive_type", media);
 			
 			/* Set for removable media */
 			if (strcmp (media, "disk") == 0) {
 				/* left blank */
 			} else if (strcmp (media, "cdrom") == 0) {
 				has_removable_media = TRUE;
+				/* cdroms are the only IDE devices that are safe to poll */
+				hal_device_property_set_bool (d, "storage.media_check_enabled", TRUE);
 			} else if (strcmp (media, "floppy") == 0) {
 				has_removable_media = TRUE;
-
-				/* I've got a LS120 that identifies as a
-				 * floppy; polling doesn't work so disable
-				 * media check and automount
-				 */
-				hal_device_property_set_bool (
-					d, "storage.media_check_enabled", FALSE);
-				hal_device_property_set_bool (
-					d, "storage.automount_enabled_hint", FALSE);
-
 			} else if (strcmp (media, "tape") == 0) {
 				has_removable_media = TRUE;
-
-				/* TODO: Someone test with tape drives! */
 			}			
 		}
 
@@ -1477,12 +1436,9 @@ block_class_pre_process (ClassDeviceHandler *self,
 			did = drive_id_open_node(device_file);
 			if (drive_id_probe(did, DRIVE_ID_ATA) == 0) {
 				if (did->serial[0] != '\0')
-					hal_device_property_set_string (stordev, 
-									"storage.serial",
-									did->serial);
+					hal_device_property_set_string (stordev, "storage.serial", did->serial);
 				if (did->firmware[0] != '\0')
-					hal_device_property_set_string (stordev, 
-									"storage.firmware_version",
+					hal_device_property_set_string (stordev, "storage.firmware_version", 
 									did->firmware);
 			}
 			drive_id_close(did);

@@ -1,5 +1,11 @@
 2004-12-08  David Zeuthen  <davidz@redhat.com>
 
+	* hald/linux/block_class_device.c (block_class_pre_process): Only
+	poll IDE if they are CD-ROM drives and use a better criteria for 
+	finding out whether this is the case
+
+2004-12-08  David Zeuthen  <davidz@redhat.com>
+
 	* hald/hald_dbus.c (device_query_capability): Fix crasher; reported by
 	leon breedt <bitserf@gmail.com>.
 
