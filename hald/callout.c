@@ -54,7 +54,7 @@ typedef struct {
 	HalDevice *device;
 	char **envp;
 	int envp_index;
-	int pid;
+	pid_t pid;
 	gboolean last_of_device;
 } Callout;
 
@@ -188,7 +188,6 @@ iochn_data (GIOChannel *source, GIOCondition condition, gpointer user_data)
 	Callout *callout;
 	GSList *it;
 
-
 	/* Empty the pipe; one character per dead child */
 	if (G_IO_STATUS_NORMAL != 
 	    g_io_channel_read_chars (source, data, 1, &bytes_read, &err)) {
@@ -211,6 +210,9 @@ iochn_data (GIOChannel *source, GIOCondition condition, gpointer user_data)
 			/* this can happen indeed since we loop */
 			goto out;
 		}
+
+		HAL_INFO (("Child pid %d terminated", child_pid));
+
 	
 		/* Now find the corresponding Callout object */
 		callout = NULL;
@@ -338,13 +340,8 @@ process_callouts (void)
 			      err->message));
 		g_error_free (err);
 	}
-}
 
-static gboolean
-process_callouts_idle (gpointer user_data)
-{
-	process_callouts ();
-	return FALSE;
+	HAL_INFO (("Child pid %d for %s", callout->pid, argv[0]));
 }
 
 void
@@ -422,8 +419,8 @@ hal_callout_device (HalDevice *device, gboolean added)
 
 	g_dir_close (dir);
 
-	if (!processing_callouts)
-		g_idle_add (process_callouts_idle, NULL);
+	if (any_callouts)
+		process_callouts ();
 
 finish:
 	/*
@@ -508,8 +505,7 @@ hal_callout_capability (HalDevice *device, const char *capability, gboolean adde
 
 	g_dir_close (dir);
 
-	if (!processing_callouts)
-		g_idle_add (process_callouts_idle, NULL);
+	process_callouts ();
 }
 
 void
@@ -589,6 +585,5 @@ hal_callout_property (HalDevice *device, const char *key)
 
 	g_dir_close (dir);
 
-	if (!processing_callouts)
-		g_idle_add (process_callouts_idle, NULL);
+	process_callouts ();
 }
