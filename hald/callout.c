@@ -56,6 +56,7 @@ typedef struct {
 	int envp_index;
 	pid_t pid;
 	gboolean last_of_device;
+	guint timeout_id;
 } Callout;
 
 static void process_next_callout (void);
@@ -144,6 +145,7 @@ iochn_data (GIOChannel *source, GIOCondition condition, gpointer user_data)
 	gchar data[1];
 	GError *err = NULL;
 	pid_t child_pid;
+	Callout *previous_callout;
 
 	/* Empty the pipe; one character per dead child */
 	if (G_IO_STATUS_NORMAL != 
@@ -170,30 +172,70 @@ iochn_data (GIOChannel *source, GIOCondition condition, gpointer user_data)
 
 		HAL_INFO (("Child pid %d terminated", child_pid));
 
-		if (active_callout->pid != child_pid) {
-			/* this should never happen */
-			HAL_ERROR (("Cannot find callout for terminated "
-				    "child with pid %d", child_pid));
+		if (active_callout == NULL) {
+			HAL_ERROR (("No active callout for child with pid %d - did it timeout?", child_pid));
 			goto out;
 		}
 
-		if (active_callout->last_of_device) {
-			hal_device_callouts_finished (active_callout->device);
-			HAL_INFO (("fooo!"));
+		if (active_callout->pid != child_pid) {
+			/* this should never happen */
+			HAL_ERROR (("Cannot find callout for terminated child with pid %d", child_pid));
+			goto out;
+		}
+
+		previous_callout = active_callout;
+		active_callout = NULL;
+
+		g_source_remove (previous_callout->timeout_id);
+
+		if (previous_callout->last_of_device) {
+			hal_device_callouts_finished (previous_callout->device);
+			HAL_INFO (("Callouts done for %s", previous_callout->device->udi));
 		}
 		
-		g_free (active_callout->filename);
-		g_strfreev (active_callout->envp);
-		g_object_unref (active_callout->device);
-		g_free (active_callout);
 
-		active_callout = NULL;
+		g_free (previous_callout->filename);
+		g_strfreev (previous_callout->envp);
+		g_object_unref (previous_callout->device);
+		g_free (previous_callout);
 		
 		process_next_callout ();
 	}
 	
 out:
 	return TRUE;
+}
+
+#define CALLOUT_TIMEOUT 10000
+
+static gboolean
+callout_timeout_handler (gpointer data)
+{
+	Callout *callout;
+
+	callout = (Callout *) data;
+	
+	HAL_WARNING (("Timeout (%d ms) for callout %s", CALLOUT_TIMEOUT, callout->filename));
+
+	/* kill the child.. kill it! */
+	kill (callout->pid, SIGTERM);
+
+	active_callout = NULL;
+
+	if (callout->last_of_device) {
+		hal_device_callouts_finished (callout->device);
+		HAL_INFO (("Callouts done for %s", callout->device->udi));
+	}
+	
+	
+	g_free (callout->filename);
+	g_strfreev (callout->envp);
+	g_object_unref (callout->device);
+	g_free (callout);
+
+	process_next_callout ();
+
+	return FALSE;
 }
 
 static void
@@ -270,6 +312,9 @@ next_callout:
 	 */
 	callout->envp[callout->envp_index] = NULL;
 
+	/* Setup timer for timeouts - ten seconds */
+	callout->timeout_id = g_timeout_add (CALLOUT_TIMEOUT, callout_timeout_handler, (gpointer) callout);
+
 	HAL_INFO (("Invoking %s/%s", callout->working_dir, argv[0]));
 
 	if (!g_spawn_async (callout->working_dir, argv, callout->envp,
@@ -278,6 +323,7 @@ next_callout:
 		HAL_WARNING (("Couldn't invoke %s: %s", argv[0],
 			      err->message));
 		g_error_free (err);
+		g_source_remove (callout->timeout_id);
 		active_callout = NULL;
 		goto next_callout;
 	} else {

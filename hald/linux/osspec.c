@@ -67,7 +67,7 @@
 #define FIRST_HOTPLUG_SLEEP 3500
 
 /** How many seconds before we discard a missing hotplug event and move on to the next one */
-#define HOTPLUG_TIMEOUT 15
+#define HOTPLUG_TIMEOUT 25
 
 extern ClassDeviceHandler input_class_handler;
 extern ClassDeviceHandler net_class_handler;

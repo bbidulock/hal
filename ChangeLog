@@ -1,3 +1,15 @@
+2005-01-12  David Zeuthen  <davidz@redhat.com>
+
+	* hald/linux/osspec.c (HOTPLUG_TIMEOUT): Increase to 25 seconds
+	to better cope with callouts timeout of 10 seconds
+
+	* hald/callout.c (iochn_data): Cope with callouts terminating
+	and free timeout handler
+	(callout_timeout_handler): New function; kill callouts if they
+	time out
+	(process_next_callout): Setup timeout for callouts - set to
+	ten seconds
+
 2005-01-11  David Zeuthen  <davidz@redhat.com>
 
 	* hald/callout.c: Simplify a lot more by demanding that callouts
