@@ -1,4 +1,12 @@
-2005-03-28  David Zeuthen  <david@fubar.dk>
+2005-04-04  David Zeuthen  <davidz@redhat.com>
+
+	* po/zh_TW.po: New file from chaoweilun@pcmail.com.tw
+
+	* po/ChangeLog: Updated
+
+	* configure.in: Added zh_TW to ALL_LINGUAS
+
+2005-03-28  David Zeuthen  <davidz@redhat.com>
 
 	* hald/linux/osspec.c: Patch from Kay Sievers <kay.sievers@vrfy.org>
 	While playing around with hotplug event replay from initramfs, it
