@@ -1,5 +1,9 @@
 2005-01-03  David Zeuthen  <davidz@redhat.com>
 
+	* configure.in: Bump to 0.4.3
+
+2005-01-03  David Zeuthen  <davidz@redhat.com>
+
 	* configure.in: Added it to ALL_LINGUAS
 
 	* po/it.po: Italien translation from Pier Luigi Fiorini
