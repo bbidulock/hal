@@ -1,5 +1,7 @@
 2005-01-06  David Zeuthen  <david@fubar.dk>
 
+	* configure.in: Bump to 0.4.4
+
 	* NEWS: Update with list changes between releases
 
 2005-01-06  David Zeuthen  <davidz@redhat.com>

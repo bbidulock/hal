@@ -1,8 +1,23 @@
+
+==========
+HAL 0.4.4 "Affirmative, Dave, I read you."
+==========
+
+Released Jan 6, 2005
+
+ - Use /proc/net/wireless to check if a network interface is wireless
+ - Allowing probing for volume_id and drive_id on IDE devices without
+   removable media (fixes regression in 0.4.3)
+ - Fix small leak in libhal (Tim Müller)
+ - Fix potential crasher when handling renamed interfaces (Sjoerd Simons)
+ - Support for Supplementary Volume Descriptor for ISO9960 fs (Leon Breedt)
+ - Update NEWS file to list release announcements
+
 ==========
 HAL 0.4.3 "It's called 'Daisy'"
 ==========
 
-Released Jan 3, 2004
+Released Jan 3, 2005
 
  - Fix syntax error in ide-drives.fdi (Martin Pitt)
  - Fix crasher in QueryCapability (Leon Breedt)
