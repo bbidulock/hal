@@ -1,3 +1,7 @@
+2004-12-01  David Zeuthen  <davidz@redhat.com>
+
+	* configure.in: Bump to 0.4.2
+
 2004-11-30  David Zeuthen  <davidz@redhat.com>
 
 	* fdi/20freedesktop/ide-drives.fdi: Add blacklist for certain slave
