@@ -1,5 +1,12 @@
 2005-01-11  David Zeuthen  <davidz@redhat.com>
 
+	* hald/callout.c: Simplify a lot more by demanding that callouts
+	are run sequentially - which they are anyway since everything is
+	serialized. Make a mental note to review and stress test this in
+	the morning.
+
+2005-01-11  David Zeuthen  <davidz@redhat.com>
+
 	* hald/callout.c: Fix some craziness adding an idle handler for
 	detecting when callouts complete - fixes bug on my new AMD64
 	system with device add/remove prior to completion of callouts -
