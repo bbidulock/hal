@@ -1,5 +1,18 @@
 2005-01-06  David Zeuthen  <davidz@redhat.com>
 
+	* hald/linux/volume_id/volume_id.c (probe_iso9660): Patch from
+	Leon Breedt <bitserf@gmail.com>. Signed off by Kay Sievers
+	<kay.sievers@vrfy.org>. It seems Joliet stores the volume label in
+	something called a Supplementary Volume Descriptor (located some
+	where after the Primary Volume Descriptor). This has largely the
+	same format as a PVD, and the volume_id field of this descriptor
+	contains the UTF-16 (Big Endian) encoded volume ID. I've created a
+	patch that uses this instead if present, and it works for me. As
+	in, the names in lshal and hal-device-manager are correctly
+	displayed.
+
+2005-01-06  David Zeuthen  <davidz@redhat.com>
+
 	* hald/linux/osspec.c (add_device): Patch from Sjoerd Simons
 	<sjoerd@luon.net>. Hal doesn't handle the case that
 	recover_net_device fails, causing a nice segv. Fixed in attached

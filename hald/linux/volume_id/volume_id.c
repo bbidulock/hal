@@ -1214,6 +1214,12 @@ found:
 }
 
 #define ISO_SUPERBLOCK_OFFSET		0x8000
+#define ISO_SECTOR_SIZE			0x800
+#define ISO_VD_OFFSET			(ISO_SUPERBLOCK_OFFSET + ISO_SECTOR_SIZE)
+#define ISO_VD_PRIMARY			0x1
+#define ISO_VD_SUPPLEMENTARY		0x2
+#define ISO_VD_END			0xff
+#define ISO_VD_MAX			16
 static int probe_iso9660(struct volume_id *id, __u64 off)
 {
 	union iso_super_block {
@@ -1239,8 +1245,36 @@ static int probe_iso9660(struct volume_id *id, __u64 off)
 		return -1;
 
 	if (strncmp(is->iso.id, "CD001", 5) == 0) {
-		set_label_raw(id, is->iso.volume_id, 32);
-		set_label_string(id, is->iso.volume_id, 32);
+		int vd_offset;
+		int i;
+		__u8 found_svd;
+
+		found_svd = 0;
+		vd_offset = ISO_VD_OFFSET;
+		for (i = 0; i < ISO_VD_MAX; i++) {
+			is = (union iso_super_block *) 
+			     get_buffer (id, off + vd_offset, 0x200);
+			if (is == NULL || is->iso.type == ISO_VD_END)
+				break;
+			if (is->iso.type == ISO_VD_SUPPLEMENTARY) {
+				dbg("found ISO supplementary VD at offset 0x%x", off + vd_offset);
+				found_svd = 1;
+				break;
+			}
+			vd_offset += ISO_SECTOR_SIZE;
+		}
+
+		if (!found_svd) {
+			is = (union iso_super_block *)
+			     get_buffer(id, off + ISO_SUPERBLOCK_OFFSET, 0x200);
+			if (is == NULL)
+				return -1;
+			set_label_raw(id, is->iso.volume_id, 32);
+			set_label_string(id, is->iso.volume_id, 32);
+		} else {
+			set_label_raw(id, is->iso.volume_id, 32);
+			set_label_unicode16(id, is->iso.volume_id, BE, 32);
+		}
 		goto found;
 	}
 	if (strncmp(is->hs.id, "CDROM", 5) == 0)
