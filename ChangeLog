@@ -1,3 +1,12 @@
+2005-02-26  David Zeuthen  <davidz@redhat.com>
+
+	* fdi/90defaultpolicy/storage-policy.fdi: Apply patch from Daniel
+	Serpell <daniel.serpell@aplik.cl> that I got via Sjoerd Simons
+	<sjoerd@luon.net> : The FDI rule that detects USB ZIP drive and
+	names the mountpoint is incorrectly write, so partitioned ZIP's
+	are named generically. The attached patch fixes the test (lookup
+	in the parent of the partition).
+
 2005-01-27  David Zeuthen  <davidz@redhat.com>
 
 	* hald/linux/net_class_device.c (net_class_pre_process): Add the

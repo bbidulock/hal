@@ -116,8 +116,8 @@
 	  <append key="volume.policy.desired_mount_point" type="string">disk</append>
 
          <!-- zip drives -->
-         <match key="storage.drive_type" string="zip">
- 	   <merge key="storage.policy.desired_mount_point" type="string">zip</merge>
+         <match key="@block.storage_device:storage.drive_type" string="zip">
+ 	   <merge key="volume.policy.desired_mount_point" type="string">zip</merge>
          </match>
 	  
           <!-- Best: If available use filesystem label -->
