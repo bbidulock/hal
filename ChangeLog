@@ -1,5 +1,11 @@
 2004-12-08  David Zeuthen  <davidz@redhat.com>
 
+	* tools/fstab-sync.c (fs_table_line_is_mounted): Patch from Sjoerd
+	Simons <sjoerd@luon.net>.  Running fclose on some random memory
+	will crash the program. Fixed in attached patch.
+
+2004-12-08  David Zeuthen  <davidz@redhat.com>
+
 	* hald/linux/block_class_device.c (detect_media): Patch from
 	Martin Pitt <martin@piware.de>.
 	Media change detection for CD-ROMs does not work on some broken
