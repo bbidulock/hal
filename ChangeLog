@@ -1,3 +1,8 @@
+2005-01-07  David Zeuthen  <davidz@redhat.com>
+
+	* fdi/20freedesktop/ide-drives.fdi: Also check IDE floppies for whether
+	they are Zip drives
+
 2005-01-07  Joe Shaw  <joeshaw@novell.com>
 
 	* configure.in: Check for popt when building fstab-sync and error
