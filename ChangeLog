@@ -1,3 +1,14 @@
+2005-01-06  David Zeuthen  <davidz@redhat.com>
+
+	* hald/linux/net_class_device.c (net_class_pre_process): Add some
+	fairly ugly code for checking in /proc/net/wireless whether an
+	interface is wireless since the 2.6.10 kernel appears not put the
+	wireless/ directory in sysfs anymore. Sigh.
+
+	* hald/linux/block_class_device.c (block_class_pre_process): Allow
+	probing of drive_id and for fstype on IDE devices that doesn't
+	use removable media
+
 2005-01-03  David Zeuthen  <davidz@redhat.com>
 
 	* configure.in: Bump to 0.4.3

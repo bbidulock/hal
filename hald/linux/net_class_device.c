@@ -525,7 +525,7 @@ net_class_pre_process (ClassDeviceHandler *self,
 	const char *media;
 	char wireless_path[SYSFS_PATH_MAX];
 	char driver_path[SYSFS_PATH_MAX];
-	dbus_bool_t is_80211 = FALSE;
+	dbus_bool_t is_80211;
 	int ifindex;
 	int flags;
 	struct stat statbuf;
@@ -537,13 +537,7 @@ net_class_pre_process (ClassDeviceHandler *self,
 	hal_device_property_set_string (d, "net.interface",
 					class_device->name);
 
-	/* Check to see if this interface supports wireless extensions */
 	is_80211 = FALSE;
-	snprintf (wireless_path, SYSFS_PATH_MAX, "%s/wireless", sysfs_path);
-	if (stat (wireless_path, &statbuf) == 0) {
-		hal_device_add_capability (d, "net.80211");
-		is_80211 = TRUE;
-	}
 
 	/* Check driver link (may be unavailable for PCMCIA devices) */
 	snprintf (driver_path, SYSFS_PATH_MAX, "%s/driver", sysfs_path);
@@ -566,11 +560,61 @@ net_class_pre_process (ClassDeviceHandler *self,
 		media_type = parse_dec (attr->value);
 	}
 
+	if (media_type == ARPHRD_ETHER) {
+		FILE *f;
+		dbus_bool_t is_wireless;
+
+
+		is_wireless = FALSE;
+
+		f = fopen ("/proc/net/wireless", "ro");
+		if (f != NULL) {
+			unsigned int i;
+			unsigned int ifname_len;
+			char buf[128];
+
+			ifname_len = strlen (class_device->name);
+
+			do {
+				if (fgets (buf, sizeof (buf), f) == NULL)
+					break;
+
+				for (i=0; i < sizeof (buf); i++) {
+					if (isspace (buf[i]))
+						continue;
+					else
+						break;
+				}
+
+				if (strncmp (class_device->name, buf + i, ifname_len) == 0) {
+					is_wireless = TRUE;
+					break;
+				}
+
+			} while (TRUE);
+			fclose (f);
+		}
+
+		if (is_wireless) {
+		/* Check to see if this interface supports wireless extensions */
+		/*
+		snprintf (wireless_path, SYSFS_PATH_MAX, "%s/wireless", sysfs_path);
+		if (stat (wireless_path, &statbuf) == 0) {
+		*/
+			hal_device_property_set_string (d, "info.category", "net.80211");
+			hal_device_add_capability (d, "net.80211");
+			is_80211 = TRUE;
+		} else {
+			hal_device_property_set_string (d, "info.category", "net.80203");
+			hal_device_add_capability (d, "net.80203");
+		}
+	}
+
 	attr = sysfs_get_classdev_attr (class_device, "flags");
 	if (attr != NULL) {
 		flags = parse_hex (attr->value);
 		hal_device_property_set_bool (d, "net.interface_up", flags & IFF_UP);
-		if (!is_80211) {
+		if (!is_80211 && media_type == ARPHRD_ETHER) {
 			/* TODO: for some reason IFF_RUNNING isn't exported in flags */
 			/*hal_device_property_set_bool (d, "net.80203.link", flags & IFF_RUNNING);*/
 			mii_get_link (d);
@@ -618,13 +662,6 @@ net_class_pre_process (ClassDeviceHandler *self,
 	hal_device_property_set_string (d, "net.media", media);
 
 	hal_device_add_capability (d, "net");
-	if (is_80211) {
-		hal_device_property_set_string (d, "info.category", "net.80211");
-		hal_device_add_capability (d, "net.80211");
-	} else {
-		hal_device_property_set_string (d, "info.category", "net.80203");
-		hal_device_add_capability (d, "net.80203");
-	}
 
 #if PCMCIA_SUPPORT_ENABLE
 	/* Add PCMCIA specific entries for PCMCIA cards */

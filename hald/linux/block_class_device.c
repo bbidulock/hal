@@ -1308,8 +1308,11 @@ block_class_pre_process (ClassDeviceHandler *self,
 		 * cause inifite loops of hotplug events, cf. broken ide-cs driver and
 		 * broken zip drives. Merely accessing the top-level block device if it
 		 * or any of it partitions are not mounted causes the loop.
+		 *
+		 * Also allow this for devices without removable media
 		 */
-		if (hal_device_property_get_bool (stordev, "storage.media_check_enabled")) {
+		if (hal_device_property_get_bool (stordev, "storage.media_check_enabled") ||
+		    !hal_device_property_get_bool (stordev, "storage.removable")) {
 			dbus_uint64_t size = 0;
 			const char *stordev_device_file;
 
@@ -1384,6 +1387,17 @@ block_class_pre_process (ClassDeviceHandler *self,
 	 ************************************************************/
 
 
+	snprintf (attr_path, SYSFS_PATH_MAX, "%s/removable", sysfs_path);
+	attr = sysfs_open_attribute (attr_path);
+	if (sysfs_read_attribute (attr) >= 0) {
+		if (attr->value [0] == '0')
+			has_removable_media = FALSE;
+		else
+			has_removable_media = TRUE;
+
+		sysfs_close_attribute (attr);
+	} 	
+
 	/* defaults */
 	hal_device_property_set_string (stordev, "storage.drive_type", "disk");
 
@@ -1438,8 +1452,11 @@ block_class_pre_process (ClassDeviceHandler *self,
 		 * cause inifite loops of hotplug events, cf. broken ide-cs driver and
 		 * broken zip drives. Merely accessing the top-level block device if it
 		 * or any of it partitions are not mounted causes the loop.
+		 *
+		 * Also allow this when we don't have removable media.
 		 */
-		if (hal_device_property_get_bool (stordev, "storage.media_check_enabled")) {
+		if (hal_device_property_get_bool (stordev, "storage.media_check_enabled") ||
+		    !has_removable_media) {
 			const char *device_file;
 			struct drive_id *did;
 
@@ -1589,17 +1606,6 @@ block_class_pre_process (ClassDeviceHandler *self,
 		
 	}
 
-	snprintf (attr_path, SYSFS_PATH_MAX, "%s/removable", sysfs_path);
-	attr = sysfs_open_attribute (attr_path);
-	if (sysfs_read_attribute (attr) >= 0) {
-		if (attr->value [0] == '0')
-			has_removable_media = FALSE;
-		else
-			has_removable_media = TRUE;
-
-		sysfs_close_attribute (attr);
-	} 
-	
 	hal_device_property_set_bool (stordev, "storage.removable", has_removable_media);
 
 	if (hal_device_has_property (stordev, "storage.drive_type") &&
