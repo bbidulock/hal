@@ -48,6 +48,7 @@ hald_SOURCES +=	\
 					linux/ide_bus_device.c		\
 					linux/pcmcia_socket_class_device.c \
 					linux/macio_bus_device.c	\
+					linux/pcmcia_bus_device.c	\
 					linux/ieee1394_class_device.c	\
 					linux/ieee1394_node_class_device.c \
 					linux/ieee1394_host_class_device.c \

@@ -37,7 +37,6 @@
 extern int isascii(int c);
 
 /* Debugging */
-#define DEBUG
 #ifdef DEBUG
 #define dprintf(format, arg...) fprintf(stderr, format, ## arg)
 #else

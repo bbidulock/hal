@@ -90,6 +90,7 @@ extern BusDeviceHandler ide_host_bus_handler;
 extern BusDeviceHandler ide_bus_handler;
 extern BusDeviceHandler scsi_bus_handler;
 extern BusDeviceHandler macio_bus_handler;
+extern BusDeviceHandler pcmcia_bus_handler;
 extern BusDeviceHandler platform_bus_handler;
 extern BusDeviceHandler usb_serial_bus_handler;
 
@@ -123,6 +124,7 @@ static BusDeviceHandler* bus_device_handlers[] = {
 	&ide_host_bus_handler,
 	&ide_bus_handler,
 	&macio_bus_handler,
+	&pcmcia_bus_handler,
 	&platform_bus_handler,
 	&scsi_bus_handler,
 	&usb_serial_bus_handler,

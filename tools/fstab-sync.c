@@ -1417,6 +1417,8 @@ remove_udi (const char *udi)
     return FALSE;
 
   block_device = hal_device_get_property_string (hal_context, udi, "block.device");
+  if (block_device == NULL)
+	  return FALSE;
 
   dir = strdup (_PATH_FSTAB); 	 
   last_slash = strrchr (dir, '/'); 	 

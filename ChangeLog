@@ -1,3 +1,23 @@
+2005-01-21  David Zeuthen  <davidz@redhat.com>
+
+	* tools/fstab-sync.c (remove_udi): Check for return value to
+	avoid dereferencing a NULL pointer
+
+	* hald/linux/block_class_device.c (block_class_pre_process): Only
+	do drive_id real SCSI since doing an INQUIRY on USB devices may
+	crash the device if the transfer length is not exactly 36 bytes.
+
+	* hald/linux/libsysfs/sysfs.h: Remove the #define DEBUG symbol
+	again
+
+	* hald/Makefile.am (hald_SOURCES): Add linux/pcmcia_bus_device.c
+
+	* hald/linux/pcmcia_bus_device.c: New file
+
+	* hald/linux/osspec.c: Add support for 16-bit PCMCIA in sysfs;
+	without this hald won't work for 16-bit PCMCIA cards and a 
+	kernel with sysfs support for those.
+
 2005-01-20  David Zeuthen  <davidz@redhat.com>
 
 	* NEWS: Update for 0.4.6

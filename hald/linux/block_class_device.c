@@ -1462,6 +1462,7 @@ block_class_pre_process (ClassDeviceHandler *self,
 
 			device_file = hal_device_property_get_string (d, "block.device");
 			did = drive_id_open_node(device_file);
+			
 			if (drive_id_probe(did, DRIVE_ID_ATA) == 0) {
 				if (did->serial[0] != '\0')
 					hal_device_property_set_string (stordev, "storage.serial", did->serial);
@@ -1511,18 +1512,28 @@ block_class_pre_process (ClassDeviceHandler *self,
 		}
 
 		device_file = hal_device_property_get_string (d, "block.device");
-		did = drive_id_open_node(device_file);
-		if (drive_id_probe(did, DRIVE_ID_SCSI) == 0) {
-			if (did->serial[0] != '\0')
-				hal_device_property_set_string (stordev,
-								"storage.serial",
-								did->serial);
-			if (did->revision[0] != '\0')
-				hal_device_property_set_string (stordev, 
-								"storage.revision",
-								did->revision);
-		}
-		drive_id_close(did);
+
+		/* Only do drive_id on real SCSI devices - not on USB which uses emulated SCSI
+		 * since an INQUIRY on most USB devices may crash the storage device if the
+		 * transfer length isn't exactly 36 bytes.
+		 *
+		 * (See also Red Hat bug #145256)
+		 */
+		if (strcmp (hal_device_property_get_string (stordev, "storage.bus"), "scsi") == 0) {
+
+			did = drive_id_open_node(device_file);
+			if (drive_id_probe(did, DRIVE_ID_SCSI) == 0) {
+				if (did->serial[0] != '\0')
+					hal_device_property_set_string (stordev,
+									"storage.serial",
+									did->serial);
+				if (did->revision[0] != '\0')
+					hal_device_property_set_string (stordev, 
+									"storage.revision",
+									did->revision);
+			}
+			drive_id_close(did);
+		} 
 
 		/* see if this is really a SATA disk */
 #if 0
