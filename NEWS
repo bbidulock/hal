@@ -1,5 +1,19 @@
 
 ==========
+HAL 0.4.5 "It's going to go 100% failure in 72 hours."
+==========
+
+Released Jan 12, 2005
+
+ - Check for popt and only build fstab-sync if enabled (Joe Shaw)
+ - Also check IDE floppies whether they are Zip drives (me)
+ - Swap label detection (Kay Sievers)
+ - Fix up handling of callouts; fixes issue (on x86_64) with devices
+   being added before the callouts complete (me)
+ - Fix issue with SVD for ISO9660 (foser, Leon Breedt, Kay Sievers)
+ - Fix bug with vfat label reading (Kay Sievers, Fredrik Nilsson, Joeny)
+
+==========
 HAL 0.4.4 "Affirmative, Dave, I read you."
 ==========
 

@@ -1,3 +1,9 @@
+2005-01-12  David Zeuthen  <david@fubar.dk>
+
+	* NEWS: Update for 0.4.5
+
+	* configure.in: Bump to 0.4.5
+
 2005-01-12  David Zeuthen  <davidz@redhat.com>
 
 	* hald/callout.c (callout_timeout_handler): Be tough and kill
