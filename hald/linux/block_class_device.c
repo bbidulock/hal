@@ -354,7 +354,7 @@ cdrom_get_properties (HalDevice *d, const char *device_file)
 	}
 	
 	/* while we're at it, check if we support media changed */
-	if (ioctl (fd, CDROM_MEDIA_CHANGED) >= 0) {
+	if (capabilities & CDC_MEDIA_CHANGED) {
 		hal_device_property_set_bool (d, "storage.cdrom.support_media_changed", TRUE);
 	} else {
 		hal_device_property_set_bool (d, "storage.cdrom.support_media_changed", FALSE);
@@ -879,7 +879,17 @@ detect_media (HalDevice * d, dbus_bool_t force_poll)
 			break;
 			
 		case CDS_DISC_OK:
-			got_media = TRUE;
+			/* some CD-ROMs report CDS_DISK_OK even with an open
+			 * tray; if media check has the same value two times in
+			 * a row then this seems to be the case and we must not
+			 * report that there is a media in it. */
+			if (hal_device_property_get_bool (d, "storage.cdrom.support_media_changed") &&
+			    ioctl (fd, CDROM_MEDIA_CHANGED, CDSL_CURRENT) && 
+			    ioctl (fd, CDROM_MEDIA_CHANGED, CDSL_CURRENT)) {
+				/*HAL_INFO (("CD-ROM drive %s: media checking is broken, assuming no CD is inside.", device_file));*/
+			} else {
+			    got_media = TRUE;
+			}
 			break;
 			
 		case -1:

@@ -1,5 +1,24 @@
 2004-12-08  David Zeuthen  <davidz@redhat.com>
 
+	* hald/linux/block_class_device.c (detect_media): Patch from
+	Martin Pitt <martin@piware.de>.
+	Media change detection for CD-ROMs does not work on some broken
+	CD-ROM devices. There are some devices where the
+	CDROM_DRIVE_STATUS ioctl returns CDS_DISK_OK even when the tray is
+	open. This has the consequence that the event of inserting a CD is
+	not recognized by hal.
+	If the CD-ROM reports CDS_DISK_OK, then CDROM_MEDIA_CHANGED should
+	be checked twice. If it returns two different values, then there
+	really was a media change and got_media can be set to true. OTOH,
+	if both CDROM_MEDIA_CHANGED events return the same value, then the
+	tray is still open and we must not assume that there is already a
+	CD in the drive.
+	Second, for deciding the value of storage.cdrom.support_media_changed
+	hald should not use the CDROM_MEDIA_CHANGED ioctl() (which returns
+	the current state), but the CDC_MEDIA_CHANGED capability.
+
+2004-12-08  David Zeuthen  <davidz@redhat.com>
+
 	* hald/linux/block_class_device.c (block_class_pre_process): Only
 	poll IDE if they are CD-ROM drives and use a better criteria for 
 	finding out whether this is the case
