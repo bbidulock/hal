@@ -1037,8 +1037,10 @@ add_device (const char *given_sysfs_path, const char *subsystem, struct hald_hel
 						} else {
 							HAL_INFO (("%s worked!", sysfs_path));
 						}
+					} else {
+						HAL_INFO (("Recovery failed!"));
+						return NULL;
 					}
-
 				} else {
 					HAL_WARNING (("Coulnd't get sysfs class device object at path %s", sysfs_path));
 					return NULL;

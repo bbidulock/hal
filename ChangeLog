@@ -1,5 +1,12 @@
 2005-01-06  David Zeuthen  <davidz@redhat.com>
 
+	* hald/linux/osspec.c (add_device): Patch from Sjoerd Simons
+	<sjoerd@luon.net>. Hal doesn't handle the case that
+	recover_net_device fails, causing a nice segv. Fixed in attached
+	patch.
+
+2005-01-06  David Zeuthen  <davidz@redhat.com>
+
 	* libhal/libhal.c (hal_device_query_capability): Patch from Tim
 	Müller <t.i.m@zen.co.uk>. The attached patch fixes a small memory
 	leak in libhal's hal_device_query_capability().
