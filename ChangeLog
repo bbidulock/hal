@@ -1,4 +1,21 @@
-2005-01-24  David Zeuthen  <david@fubar.dk>
+2005-01-24  David Zeuthen  <davidz@redhat.com>
+
+	* libhal-storage/libhal-storage.c (mopts_collect): Also remove
+	mount options if something is set to FALSE (based on patch from
+	Sebastian Dransfeld <sebastid@stud.ntnu.no>; also fix a pretty bad
+	bug where the computation of is_imply_opt were totally wrong.
+	(hal_volume_policy_get_mount_options),
+	(hal_drive_policy_get_mount_options): Collect imply options in the
+	correct order now that mopts_collect is fixed : -do-
+
+2005-01-24  David Zeuthen  <davidz@redhat.com>
+
+	* tools/device-manager/Const.py.in: hdm throws a nice exception
+	when info.bus == "ieee1394", can be easily solved by adding it to
+	BUS_NAMES. Done in attached patch. From Sjoerd Simons
+	<sjoerd@luon.net>.
+
+2005-01-24  David Zeuthen  <davidz@redhat.com>
 
 	* hald/linux/usb_bus_device.c (usb_device_pre_process): cur->len
 	may be zero so don't look at sysfs attributes in that case. From
