@@ -1,3 +1,9 @@
+2004-12-06  David Zeuthen  <davidz@redhat.com>
+
+	* fdi/20freedesktop/ide-drives.fdi: Fix <device> to be </device> so
+	we don't get errors evaluating the file. From Martin Pitt 
+	<martin@piware.de> and also RH bug #141771.
+
 2004-12-01  David Zeuthen  <davidz@redhat.com>
 
 	* configure.in: Bump to 0.4.2
