@@ -1,4 +1,29 @@
-2004-11-22  David Zeuthen  <david@fubar.dk>
+2004-11-30  David Zeuthen  <davidz@redhat.com>
+
+	* hald/linux/osspec.c (compute_coldplug_visit_device): Descent down
+	the to leafs of the /sys/devices tree but dont follow symlinks - done
+	such that we can process sysfs trees with holes in them (cf. SCSI
+	midlayer changes for kernel 2.6.10)
+
+	* hald/linux/common.h: Remove prototypes for get_parent_sysfs_path()
+	and add find_closest_ancestor(), find_computer()
+
+	* hald/linux/common.c (find_closest_ancestor): New function - such
+	that we can process sysfs trees with holes in them (cf. SCSI
+	midlayer changes for kernel 2.6.10)
+	(get_parent_sysfs_path): Make this static
+	(find_computer): New function
+
+	* hald/linux/class_device.c (class_device_visit): Use new function
+	find_closest_ancestor() instead of get_parent_sysfs_path
+
+	* hald/linux/bus_device.c (bus_device_visit): Use new function
+	find_closest_ancestor() instead of get_parent_sysfs_path
+
+	* hald/linux/block_class_device.c (block_class_visit): Use new
+	function find_closest_ancestor() instead of get_parent_sysfs_path
+
+2004-11-22  David Zeuthen  <davidz@redhat.com>
 
 	* hald/linux/volume_id/volume_id.c (volume_id_probe): Add some
 	logging of what size we call volume_id_probe with

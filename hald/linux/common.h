@@ -68,7 +68,9 @@ typedef char *(*ComputeFDI) (HalDevice * d, int append_num);
 
 char *rename_and_merge (HalDevice *d, ComputeFDI naming_func, const char *namespace);
 
-char *get_parent_sysfs_path (const char *path);
+HalDevice * find_closest_ancestor (const char *sysfs_path);
+
+HalDevice * find_computer ();
 
 dbus_bool_t class_device_get_major_minor (const char *sysfs_path, int *major, int *minor);
 

@@ -196,7 +196,6 @@ block_class_visit (ClassDeviceHandler *self,
 {
 	HalDevice *d;
 	HalDevice *parent;
-	char *parent_sysfs_path;
 	ClassAsyncData *cad;
 	struct sysfs_device *sysdevice;
 
@@ -218,10 +217,12 @@ block_class_visit (ClassDeviceHandler *self,
 	sysdevice = sysfs_get_classdev_device (class_device);
 
 	if (sysdevice == NULL) {
-		parent_sysfs_path = get_parent_sysfs_path (path);
+		parent = find_closest_ancestor (path);
 		hal_device_property_set_bool (d, "block.is_volume", TRUE);
 	} else {
-		parent_sysfs_path = sysdevice->path;
+		parent = hal_device_store_match_key_value_string (hald_get_gdl (), 
+								  "linux.sysfs_path_device", 
+								  sysdevice->path);
 		hal_device_property_set_bool (d, "block.is_volume", FALSE);
 	}
 
@@ -254,9 +255,6 @@ block_class_visit (ClassDeviceHandler *self,
 	 * sure to be added before us (we probe devices in the right order
 	 * and we reorder hotplug events)
 	 */
-	parent = hal_device_store_match_key_value_string (hald_get_gdl (), 
-							  "linux.sysfs_path_device", 
-							  parent_sysfs_path);
 	if (parent == NULL) {
 		hal_device_store_remove (hald_get_tdl (), d);
 		d = NULL;
