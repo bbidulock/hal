@@ -1485,8 +1485,6 @@ mopts_collect (LibHalContext *hal_ctx, const char *namespace, int namespace_len,
 			    strcmp (option, "pamconsole") == 0)
 				is_imply_opt = TRUE;
 
-			fprintf (stderr, "************************************\n");
-			fprintf (stderr, "option=%s is_imply=%d only_collect_imply=%d\n", option, is_imply_opt, only_collect_imply_opts);
 			
 			if (only_collect_imply_opts) {
 				if (!is_imply_opt)
@@ -1497,7 +1495,6 @@ mopts_collect (LibHalContext *hal_ctx, const char *namespace, int namespace_len,
 			}
 
 			if (hal_psi_get_bool (&it)) {
-				fprintf (stderr, "before_mount_options = %s - ", options_string);
 				/* see if option is already there */
 				location = strstr (options_string, option);
 				if (location == NULL) {
@@ -1505,7 +1502,6 @@ mopts_collect (LibHalContext *hal_ctx, const char *namespace, int namespace_len,
 						strcat_len (options_string, ",", options_max_len);
 					strcat_len (options_string, option, options_max_len);
 				}
-				fprintf (stderr, "after_mount_options = %s\n", options_string);
 			} else {
 				/* remove option if already there */
 				location = strstr (options_string, option);

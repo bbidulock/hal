@@ -1,5 +1,10 @@
 2005-01-24  David Zeuthen  <davidz@redhat.com>
 
+	* libhal-storage/libhal-storage.c (mopts_collect): Remove debugging
+	fprintf's
+
+2005-01-24  David Zeuthen  <davidz@redhat.com>
+
 	* libhal-storage/libhal-storage.c (mopts_collect): Also remove
 	mount options if something is set to FALSE (based on patch from
 	Sebastian Dransfeld <sebastid@stud.ntnu.no>; also fix a pretty bad
