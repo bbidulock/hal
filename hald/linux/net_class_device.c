@@ -152,6 +152,8 @@ mii_get_rate (HalDevice *d)
 	int res;
 	guint16 link_word;
 
+	HAL_INFO (("Entering"));
+
 	ifname = hal_device_property_get_string (d, "net.interface");
 
 	sockfd = socket (AF_INET, SOCK_DGRAM, 0);
@@ -216,6 +218,8 @@ mii_get_link (HalDevice *d)
 	gboolean new_ioctl_nums;
 	int res;
 	guint16 status_word;
+
+	HAL_INFO (("Entering"));
 
 	ifname = hal_device_property_get_string (d, "net.interface");
 
@@ -340,7 +344,12 @@ link_detection_handle_message (struct nlmsghdr *hdr)
 			if (hal_device_has_capability (d, "net.80203")) {
 				if (!hal_device_property_get_bool (d, "net.80203.link")) {
 					hal_device_property_set_bool (d, "net.80203.link", TRUE);
+#ifdef SYSFS_CARRIER_ENABLE
+					HAL_INFO (("Assuming link speed is 100Mbps"));
+					hal_device_property_set_uint64 (d, "net.80203.rate", 100 * 1000 * 1000);
+#else /* SYSFS_CARRIER_ENABLE */
 					mii_get_rate (d);
+#endif /* SYSFS_CARRIER_ENABLE */
 				}
 			}
 		} else {
@@ -617,7 +626,20 @@ net_class_pre_process (ClassDeviceHandler *self,
 		if (!is_80211 && media_type == ARPHRD_ETHER) {
 			/* TODO: for some reason IFF_RUNNING isn't exported in flags */
 			/*hal_device_property_set_bool (d, "net.80203.link", flags & IFF_RUNNING);*/
+#ifdef SYSFS_CARRIER_ENABLE
+			attr = sysfs_get_classdev_attr (class_device, "carrier");
+			if (attr != NULL) {
+				int have_link;
+
+				have_link = parse_dec (attr->value);
+				HAL_INFO (("According to sysfs link status is %d", have_link));
+				hal_device_property_set_bool (d, "net.80203.link", have_link != 0);
+				HAL_INFO (("Assuming link speed is 100Mbps"));
+				hal_device_property_set_uint64 (d, "net.80203.rate", 100 * 1000 * 1000);
+			}
+#else /* SYSFS_CARRIER_ENABLE */
 			mii_get_link (d);
+#endif /* SYSFS_CARRIER_ENABLE */
 		}
 	}
 
@@ -653,7 +675,12 @@ net_class_pre_process (ClassDeviceHandler *self,
 
 	if (hal_device_has_property (d, "net.80203.link") &&
 	    hal_device_property_get_bool (d, "net.80203.link")) {
+#ifdef SYSFS_CARRIER_ENABLE
+		HAL_INFO (("Assuming link speed is 100Mbps"));
+		hal_device_property_set_uint64 (d, "net.80203.rate", 100 * 1000 * 1000);
+#else /* SYSFS_CARRIER_ENABLE */
 		mii_get_rate (d);
+#endif /* SYSFS_CARRIER_ENABLE */
 	}
 
 	hal_device_property_set_int (d, "net.arp_proto_hw_id", media_type);

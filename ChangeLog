@@ -1,3 +1,21 @@
+2005-01-17  David Zeuthen  <davidz@redhat.com>
+
+	* hald/linux/net_class_device.c (mii_get_rate): Add debug statements
+	to see if we enter this function
+	(mii_get_link): Add debug statements to see if we enter
+	(link_detection_handle_message): Assume link is always 100Mbps
+	if built with --enable-sysfs-carrier.
+	(net_class_pre_process): If built with --enable-sysfs-carrier
+	use sysfs file to check link and assume 100Mbps for speed if
+	there is a link
+
+	* configure.in: Add new --enable-sysfs-carrier option for using
+	the carrier file in sysfs to determine whether there is link for
+	networking devices. Right now this will always set the speed to
+	100Mbps until there is a link (until the Linux kernel exports
+	this in sysfs also). Requires Linux 2.6.10 or later. Disabled
+	by default; hald now only uses mii registers if this is disabled.
+
 2005-01-17  Kay Sievers  <kay.sievers@vrfy.org>
 
 	* hald/linux/volume_id/volume_id.c: (probe_vfat): Thanks to
@@ -10,7 +28,7 @@
 	signed volumes. Accept directory volume label entry only if the
 	entry has no cluster associated.
 
-2005-01-12  David Zeuthen  <david@fubar.dk>
+2005-01-12  David Zeuthen  <davidz@redhat.com>
 
 	* NEWS: Update for 0.4.5
 
