@@ -1,3 +1,8 @@
+2004-12-08  David Zeuthen  <davidz@redhat.com>
+
+	* hald/hald_dbus.c (device_query_capability): Fix crasher; reported by
+	leon breedt <bitserf@gmail.com>.
+
 2004-12-06  David Zeuthen  <davidz@redhat.com>
 
 	* fdi/20freedesktop/ide-drives.fdi: Fix <device> to be </device> so
