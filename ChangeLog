@@ -1,3 +1,11 @@
+2005-01-03  David Zeuthen  <davidz@redhat.com>
+
+	* hald/linux/block_class_device.c (detect_media): hald contains a
+	file descriptor leak that makes normal users unable to eject audio
+	CDs and other CDs/DVDs that does not contain normal filesystems.
+	Problem identified and fixed by Peter Österlund, originally posted
+	on LKML.
+
 2004-12-31  David Zeuthen  <davidz@redhat.com>
 
 	* hald/linux/block_class_device.c (etc_mtab_process_line): Several

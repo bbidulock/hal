@@ -1065,6 +1065,7 @@ detect_media (HalDevice * d, dbus_bool_t force_poll)
 				if (is_cdrom) {
 					/* volume_id cannot probe blank/audio discs etc,
 					 * so don't fail for them, just set vid to NULL */
+					volume_id_close (vid);
 					vid = NULL;
 				} else {
 					g_object_unref (child);
