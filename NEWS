@@ -1,5 +1,18 @@
 
 ==========
+HAL 0.4.7 "I'm afraid, Dave."
+==========
+
+Released Jan 24, 2005
+
+ - Add support for PCMCIA cards if they are in sysfs (on 2.6.10-ish kernels)
+ - Fix reporting of USB interface class
+ - Make hald not crash if sysfs files are writable but not readable
+ - Small h-d-m fix (Sjoerd Simons)
+ - Fix a bug in libhal-storage where mount options were merged even
+   though they were set to FALSE.
+
+==========
 HAL 0.4.6 "It can only be attributable to human error."
 ==========
 
