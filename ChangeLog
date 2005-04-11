@@ -1,3 +1,9 @@
+2005-04-11  David Zeuthen  <davidz@redhat.com>
+
+	* configure.in: Revert version from 0.4.7.cvs20050128c to 0.4.7.
+	Add /var/lib/misc to the search path for pci.ids. From Murray
+	Cumming <murrayc@murrayc.com>, fdo bug #2547
+
 2005-04-04  David Zeuthen  <davidz@redhat.com>
 
 	* po/zh_TW.po: New file from chaoweilun@pcmail.com.tw
