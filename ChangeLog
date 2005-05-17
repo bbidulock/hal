@@ -1,3 +1,11 @@
+2005-05-17  David Zeuthen  <davidz@redhat.com>
+
+	* hald/linux/libsysfs/sysfs_dir.c:
+	(sysfs_read_dir_attributes): Don't ever read sysfs attribute of
+	the name "config" since reading the "config" file for PCI may
+	cause SCSI errors on a sym53c8xx card. Fix suggested by Matthias
+	Andree <ma@dt.e-technik.uni-dortmund.de>. See also fd.o #1852
+
 2005-04-11  David Zeuthen  <davidz@redhat.com>
 
 	* configure.in: Revert version from 0.4.7.cvs20050128c to 0.4.7.

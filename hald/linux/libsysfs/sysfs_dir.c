@@ -624,6 +624,8 @@ int sysfs_read_dir_attributes(struct sysfs_directory *sysdir)
 			 continue;
 		if (0 == strcmp(dirent->d_name, ".."))
 			continue;
+		if (0 == strcmp(dirent->d_name, "config"))
+			continue;
 		memset(file_path, 0, SYSFS_PATH_MAX);
 		safestrcpy(file_path, sysdir->path);
 		safestrcat(file_path, "/");
