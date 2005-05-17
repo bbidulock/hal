@@ -1,5 +1,21 @@
 
 ==========
+HAL 0.4.8 "Without your space helmet, Dave, you're going to find 
+	   that rather difficult."
+==========
+
+Released May 17, 2005
+
+ - Fix network link detection (Bill Moss)
+ - Add the net.80203.can_detect_link
+ - Fix a problem with trailing commas in libhal-storage (Sebastian Dransfeld)
+ - Use better names for USB Zip Drives (Daniel Serpell)
+ - Fix some memory leaks when handling device information files
+ - zh_TW translation (chaoweilun@pcmail.com.tw)
+ - Add /var/lib/misc to pci.ids search path (Murray Cumming, fd.o #2547)
+ - Never read sysfs attributes called "config" (Matthias Andree, fd.o #1852)
+
+==========
 HAL 0.4.7 "I'm afraid, Dave."
 ==========
 

@@ -1,5 +1,11 @@
 2005-05-17  David Zeuthen  <davidz@redhat.com>
 
+	* configure.in: Bump version to 0.4.8
+
+	* NEWS: Update for 0.4.8
+
+2005-05-17  David Zeuthen  <davidz@redhat.com>
+
 	* hald/linux/libsysfs/sysfs_dir.c:
 	(sysfs_read_dir_attributes): Don't ever read sysfs attribute of
 	the name "config" since reading the "config" file for PCI may
