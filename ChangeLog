@@ -1,5 +1,16 @@
 2006-07-26  David Zeuthen  <davidz@redhat.com>
 
+	* hald/linux2/hotplug.c: Backport this fix done by Kay Sievers
+	<kay.sievers@vrfy.org> to fix sysfs changes post Linux 2.6.17:
+	(hotplug_event_begin_sysfs): Prepare for
+        new class devices showing up in /sys/devices instead of /sys/class.
+
+	* hald/linux2/hotplug_helper.h (HALD_HELPER_STRLEN): Bump from 256
+	to 512 as the kernel emits longer sysfs paths post Linux
+	2.6.17. And udev now also uses 512.
+
+2006-07-26  David Zeuthen  <davidz@redhat.com>
+
 	* configure.in: Bump version for upcoming 0.5.7.1 maintenance release
 
 2006-02-24  David Zeuthen  <davidz@redhat.com>
