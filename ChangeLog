@@ -1,5 +1,9 @@
 2006-07-26  David Zeuthen  <davidz@redhat.com>
 
+	* NEWS: Update for 0.5.7.1
+
+2006-07-26  David Zeuthen  <davidz@redhat.com>
+
 	* hald/linux2/hotplug.c: Backport this fix done by Kay Sievers
 	<kay.sievers@vrfy.org> to fix sysfs changes post Linux 2.6.17:
 	(hotplug_event_begin_sysfs): Prepare for
