@@ -2,6 +2,35 @@
 HAL 0.5.8.1
 ==========
 
+David Zeuthen:
+      fix race condition when unmounting a volume takes a very long time
+      don't lock the .hal-mtab file at all when checking mount status on
+        unmount
+      don't update mount state until Unmount() returns
+      fix stupid typo in syslog reporting for Mount()
+      bump release to 0.5.8.1
+      only install PolicyKit privilege files if we're using PolicyKit
+      only require libvolume_id >= 061
+      fixup NEWS file to list correct requirements, e.g. udev 089
+      don't fail, print warning if ARPHRD_IEEE80211_{RADIOTAP,PRISM} is not
+        defined
+      fix up overflow of 32-bit variable when getting 64-bit value
+      remove unneeded debug
+      send changes in correct order for LibHalChangeSet
+      remove dead code introduced by commit 
+        0ae1aed74548fec563399d00100d621ce99b383b
+      enable looking for data track on optical discs
+      export Eject() even on discs where we can't detect a file system
+      probe for partitions on data discs where we fail to detect an fs
+      don't build Macbook Pro utils on non-x86
+
+Holger Macht:
+      fixed typos in cpufreq addon
+
+S.Ça%GÄŸ%@lar Onur:
+      get ARPHRD_IEEE80211_RADIOTAP and similar from kernel, not glibc headers
+
+
 Requirements for HAL 0.5.8.1
 
  - Linux kernel     >= 2.6.17
