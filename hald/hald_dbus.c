@@ -2161,6 +2161,7 @@ device_is_caller_locked_out (DBusConnection *connection, DBusMessage *message, d
         /* only allow HAL helpers / privileged users to ask this question */
         if (!local_interface && !access_check_message_caller_is_root_or_hal (ci_tracker, message)) {
                 raise_permission_denied (connection, message, "IsCallerLockedOut: not privileged");
+                return DBUS_HANDLER_RESULT_HANDLED;
         }
 
 	dbus_error_init (&error);
