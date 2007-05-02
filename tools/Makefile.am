@@ -1,7 +1,11 @@
 ## Process this file with automake to produce Makefile.in
 
 
-SUBDIRS = device-manager
+SUBDIRS =
+
+if HAVE_PYTHON
+SUBDIRS += device-manager
+endif
 
 if HALD_COMPILE_LINUX
 SUBDIRS += linux
