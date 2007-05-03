@@ -29,13 +29,12 @@ msgid "%s%s Drive"
 msgstr "Lecteur %s%s"
 
 #: ../libhal-storage/libhal-storage.c:315
-#, fuzzy
 msgid "External Magneto Optical Drive"
-msgstr "Lecteur de disquettes externe"
+msgstr "Lecteur de disques magnéto-optiques externe"
 
 #: ../libhal-storage/libhal-storage.c:317
 msgid "Magneto Optical Drive"
-msgstr ""
+msgstr "Lecteur de disques magnéto-optiques"
 
 #: ../libhal-storage/libhal-storage.c:323
 msgid "External Floppy Drive"
@@ -48,7 +47,7 @@ msgstr "Lecteur de disquettes"
 #: ../libhal-storage/libhal-storage.c:332
 #, c-format
 msgid "%s External Hard Drive"
-msgstr "Disque sur externe %s"
+msgstr "Disque dur externe %s"
 
 #: ../libhal-storage/libhal-storage.c:335
 #, c-format
@@ -68,7 +67,6 @@ msgid "Drive"
 msgstr "Lecteur"
 
 #: ../libhal-storage/libhal-storage.c:400
-#, fuzzy
 msgid "CD-ROM "
 msgstr "CD-ROM"
 
@@ -89,9 +87,8 @@ msgid "CD-RW"
 msgstr "CD-RW"
 
 #: ../libhal-storage/libhal-storage.c:418
-#, fuzzy
 msgid "DVD-ROM"
-msgstr "/DVD-ROM"
+msgstr "DVD-ROM"
 
 #: ../libhal-storage/libhal-storage.c:423
 msgid "Blank DVD-RAM"
@@ -142,54 +139,44 @@ msgid "DVD+R Dual-Layer"
 msgstr "DVD+R double couche"
 
 #: ../libhal-storage/libhal-storage.c:464
-#, fuzzy
 msgid "BD-ROM"
-msgstr "CD-ROM"
+msgstr "BD-ROM"
 
 #: ../libhal-storage/libhal-storage.c:469
-#, fuzzy
 msgid "Blank BD-R"
-msgstr "CD-R vierge"
+msgstr "BD-R vierge"
 
 #: ../libhal-storage/libhal-storage.c:471
-#, fuzzy
 msgid "BD-R"
-msgstr "CD-R"
+msgstr "BD-R"
 
 #: ../libhal-storage/libhal-storage.c:476
-#, fuzzy
 msgid "Blank BD-RE"
-msgstr "CD-R vierge"
+msgstr "BD-RE vierge"
 
 #: ../libhal-storage/libhal-storage.c:478
-#, fuzzy
 msgid "BD-RE"
-msgstr "CD-R"
+msgstr "BD-RE"
 
 #: ../libhal-storage/libhal-storage.c:482
-#, fuzzy
 msgid "HD DVD-ROM"
-msgstr "/DVD-ROM"
+msgstr "HD DVD-ROM"
 
 #: ../libhal-storage/libhal-storage.c:487
-#, fuzzy
 msgid "Blank HD DVD-R"
-msgstr "DVD-R vierge"
+msgstr "HD DVD-R vierge"
 
 #: ../libhal-storage/libhal-storage.c:489
-#, fuzzy
 msgid "HD DVD-R"
-msgstr "DVD-R"
+msgstr "HD DVD-R"
 
 #: ../libhal-storage/libhal-storage.c:494
-#, fuzzy
 msgid "Blank HD DVD-RW"
-msgstr "DVD-RW vierge"
+msgstr "HD DVD-RW vierge"
 
 #: ../libhal-storage/libhal-storage.c:496
-#, fuzzy
 msgid "HD DVD-RW"
-msgstr "DVD-RW"
+msgstr "HD DVD-RW"
 
 #: ../libhal-storage/libhal-storage.c:504
 msgid "Audio CD"
@@ -197,11 +184,11 @@ msgstr "CD audio"
 
 #: ../libhal-storage/libhal-storage.c:511
 msgid "Blank Magneto Optical"
-msgstr ""
+msgstr "Magnéto-optique vierge"
 
 #: ../libhal-storage/libhal-storage.c:513
 msgid "Magneto Optical"
-msgstr ""
+msgstr "Magnéto-optique"
 
 #: ../libhal-storage/libhal-storage.c:519
 #, c-format
@@ -339,71 +326,4 @@ msgstr "Version USB"
 
 #: ../tools/device-manager/hal-device-manager.glade.h:32
 msgid "_Virtual Devices"
-msgstr ""
-
-#~ msgid "/DVD+R"
-#~ msgstr "/DVD+R"
-
-#~ msgid "/DVD+RW"
-#~ msgstr "/DVD+RW"
-
-#~ msgid "/DVD-R"
-#~ msgstr "/DVD-R"
-
-#~ msgid "/DVD-RW"
-#~ msgstr "/DVD-RW"
-
-#~ msgid "/DVD-RAM"
-#~ msgstr "/DVD-RAM"
-
-#~ msgid "/DVD±R DL"
-#~ msgstr "/DVD±R DL"
-
-#~ msgid "/DVD±R"
-#~ msgstr "/DVD±R"
-
-#~ msgid "/DVD±RW DL"
-#~ msgstr "/DVD±RW DL"
-
-#~ msgid "/DVD±RW"
-#~ msgstr "/DVD±RW"
-
-#~ msgid "Add an entry to fstab"
-#~ msgstr "Ajouter une entrée à fstab"
-
-#~ msgid "Remove an entry from fstab"
-#~ msgstr "Supprimer une entrée de fstab"
-
-#~ msgid "Remove all generated entries from fstab"
-#~ msgstr "Supprimer toutes les entrées générées de fstab"
-
-#~ msgid "Report detailed information about operation progress"
-#~ msgstr ""
-#~ "Rapporter des informations détaillées sur la progression des opérations"
-
-#~ msgid "CD-ROM Disc"
-#~ msgstr "CD-ROM"
-
-#~ msgid "CD-R Disc"
-#~ msgstr "CD-R"
-
-#~ msgid "CD-RW Disc"
-#~ msgstr "CD-RW"
-
-#~ msgid "DVD-ROM Disc"
-#~ msgstr "DVD-ROM"
-
-#~ msgid "DVD-RAM Disc"
-#~ msgstr "DVD-RAM"
-
-#~ msgid "DVD-R Disc"
-#~ msgstr "DVD-R"
-
-#~ msgid "DVD-RW Disc"
-#~ msgstr "DVD-RW"
-
-#~ msgid "DVD+R Disc"
-#~ msgstr "DVD+R"
-
-#~ msgid "DVD+RW Disc"
-#~ msgstr "DVD+RW"
+msgstr "Péripériques _virtuels"
