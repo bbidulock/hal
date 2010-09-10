@@ -620,6 +620,9 @@ main (int argc, char *argv[])
 						 BLKID_PROBREQ_USAGE | BLKID_PROBREQ_VERSION);
 
 			HAL_INFO (("invoking blkid_do_safeprobe, offset=%d, size=%d", vol_probe_offset, vol_size));
+			if (is_disc) {
+				blkid_probe_filter_usage(pr, BLKID_FLTR_NOTIN, BLKID_USAGE_RAID);
+			}
 			bid_ret = blkid_probe_set_device (pr, fd, vol_probe_offset, vol_size);
 			if (bid_ret == 0) {
 				bid_ret = blkid_do_safeprobe (pr);
