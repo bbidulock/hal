@@ -34,4 +34,4 @@ DISTCLEANFILES = hal.pc hal-storage.pc
 EXTRA_DIST = HACKING hal.pc.in hal-storage.pc.in hal.conf.in ChangeLog
 
 clean-local :
-	rm -f *~
+	rm -f *~ hal-*.tar.bz2 hal-*.tar.gz
