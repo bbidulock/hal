@@ -339,11 +339,14 @@ static dbus_bool_t
 libhal_property_fill_value_from_variant (LibHalProperty *p, DBusMessageIter *var_iter)
 {
 	DBusMessageIter iter_array;
+	int type;
+
+	type = p->type;
 
 	LIBHAL_CHECK_PARAM_VALID(p, "LibHalProperty *p", FALSE);
 	LIBHAL_CHECK_PARAM_VALID(var_iter, "DBusMessageIter *var_iter", FALSE);
 
-	switch (p->type) {
+	switch (type) {
 	case DBUS_TYPE_ARRAY:
 		if (dbus_message_iter_get_element_type (var_iter) != DBUS_TYPE_STRING)
 			return FALSE;

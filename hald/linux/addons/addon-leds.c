@@ -61,16 +61,17 @@ get_leds_brightness (const char *udi)
 	int brightness;
 	
 	f = NULL;
+	brightness = -1;
 
 	if (!g_hash_table_lookup_extended (leds, udi, NULL, (gpointer) &sysfs_path)) {
-		return -1;
+		return brightness;
 	}
 
 	snprintf (path, sizeof (path), "%s/brightness", sysfs_path);
 
         if ((f = fopen (path, "rb")) == NULL) {
 		HAL_WARNING(("Could not read brightness from '%s' for device '%s'", path, udi));
-		return -1;
+		return brightness;
 	}
 
 	if (fgets (buf, sizeof (buf), f) == NULL) {
