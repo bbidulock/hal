@@ -45,7 +45,7 @@ scsi_command_new_from_cdrom (HFPCDROM *cdrom)
 static void
 scsi_command_free (ScsiCommand * cmd)
 {
-	free (cmd);
+	g_free (cmd);
 }
 
 static void
@@ -107,7 +107,7 @@ get_dvd_r_rw_profile (HFPCDROM *cdrom)
 	if (scsi_command_transport (cmd, READ, list, len)) {
 		/* GET CONFIGURATION failed */
 		scsi_command_free (cmd);
-		free (list);
+		g_free (list);
 		return -1;
 	}
 
@@ -170,7 +170,7 @@ get_dvd_r_rw_profile (HFPCDROM *cdrom)
 	}
 
 	scsi_command_free (cmd);
-	free (list);
+	g_free (list);
 
 	return retval;
 
@@ -230,7 +230,7 @@ pull_page2a_from_cdrom (HFPCDROM *cdrom)
 	if (scsi_command_transport (cmd, READ, page2A, len)) {
 		/* MODE SENSE failed */
 		scsi_command_free (cmd);
-		free (page2A);
+		g_free (page2A);
 		return NULL;
 	}
 
@@ -330,7 +330,7 @@ get_write_speeds (const unsigned char *p, int length, int max_speed)
 	}
 
 free_tmpspeeds:
-	free (tmpspeeds);
+	g_free (tmpspeeds);
 
 	return result;
 }
@@ -462,7 +462,7 @@ get_disc_capacity_cdr (HFPCDROM *cdrom, guint64 *size)
 
 	if (scsi_command_transport (cmd, READ, atip, len)) {
 		/* READ TOC failed */
-		free (atip);
+		g_free (atip);
 		goto done;
 	}
 
@@ -473,7 +473,7 @@ get_disc_capacity_cdr (HFPCDROM *cdrom, guint64 *size)
 	}
 	retval = 0;
 
-	free (atip);
+	g_free (atip);
  done:
 	scsi_command_free (cmd);
 
