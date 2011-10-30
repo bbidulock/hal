@@ -146,8 +146,6 @@ main (int argc, char *argv[])
 	libhal_device_commit_changeset (ctx, cset, &error);
 	libhal_device_free_changeset (cset);
 
-	close (fd);
-
 	ret = 0;
 
 out:
