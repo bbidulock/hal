@@ -894,6 +894,7 @@ hotplug_event_begin_add_blockdev (const gchar *sysfs_path, const gchar *device_f
 	gboolean is_cciss_device;
         int md_number;
 	char tc;
+	const gchar *last_elem;
 
 	is_device_mapper = FALSE;
         is_fakevolume = FALSE;
@@ -908,11 +909,13 @@ hotplug_event_begin_add_blockdev (const gchar *sysfs_path, const gchar *device_f
 		goto out;
 	}
 
-	if (strcmp (hal_util_get_last_element (sysfs_path), "fakevolume") == 0) {
+	last_elem = hal_util_get_last_element (sysfs_path);
+
+	if (strcmp (last_elem, "fakevolume") == 0) {
 		HAL_INFO (("Handling %s as fakevolume - sysfs_path_real=%s", device_file, sysfs_path_real));
 		is_fakevolume = TRUE;
 		sysfs_path_real = hal_util_get_parent_path (sysfs_path);
-        } else if (sscanf (hal_util_get_last_element (sysfs_path), "md%d%c", &md_number, &tc) == 1) {
+        } else if (last_elem && sscanf (last_elem, "md%d%c", &md_number, &tc) == 1) {
 		HAL_INFO (("Handling %s as MD device", device_file));
                 is_md_device = TRUE;
 		sysfs_path_real = g_strdup (sysfs_path);
@@ -1079,12 +1082,14 @@ hotplug_event_begin_add_blockdev (const gchar *sysfs_path, const gchar *device_f
 	if (!is_partition && !is_device_mapper && !is_fakevolume) {
 		const char *udi_it;
 		const char *physdev_udi;
+		const char *scsidev_udi;
 		HalDevice *scsidev;
 		HalDevice *physdev;
 		gboolean is_hotpluggable;
 		gboolean is_removable;
 		gboolean requires_eject;
 		gboolean no_partitions_hint;
+		gboolean was_scsi;
 		const gchar *bus;
 		const gchar *parent_bus;
 
@@ -1093,6 +1098,7 @@ hotplug_event_begin_add_blockdev (const gchar *sysfs_path, const gchar *device_f
 		 *******************************/
 
 		scsidev = NULL;
+		scsidev_udi = NULL;
 		physdev = NULL;
 		physdev_udi = NULL;
 
@@ -1100,6 +1106,7 @@ hotplug_event_begin_add_blockdev (const gchar *sysfs_path, const gchar *device_f
 		is_hotpluggable = FALSE;
 		requires_eject = FALSE;
 		no_partitions_hint = FALSE;
+		was_scsi = FALSE;
 
 		/* defaults */
 		hal_device_property_set_string (d, "storage.bus", "unknown");
@@ -1120,6 +1127,7 @@ hotplug_event_begin_add_blockdev (const gchar *sysfs_path, const gchar *device_f
 		 * start with our parent. On the way, optionally pick up
 		 * the scsi if it exists */
 		udi_it = hal_device_get_udi (parent);
+		
 		while (udi_it != NULL) {
 			HalDevice *d_it;
 
@@ -1140,54 +1148,53 @@ hotplug_event_begin_add_blockdev (const gchar *sysfs_path, const gchar *device_f
 			}
 
                         if (strcmp (udi_it, "/org/freedesktop/Hal/devices/computer") == 0) {
-					physdev = d_it;
-					physdev_udi = udi_it;
-                                        if (is_md_device) {
-                                                char *level;
-                                                char *model_name;
+				physdev = d_it;
+				physdev_udi = udi_it;
 
-                                                hal_device_property_set_string (d, "storage.bus", "linux_raid");
+                                if (is_md_device) {
+					char *level;
+					char *model_name;
 
-                                                level = hal_util_get_string_from_file (sysfs_path_real, "md/level");
-                                                if (level == NULL)
-                                                        goto error;
-                                                hal_device_property_set_string (d, "storage.linux_raid.level", level);
+					hal_device_property_set_string (d, "storage.bus", "linux_raid");
 
-                                                hal_device_property_set_string (d, "storage.linux_raid.sysfs_path", sysfs_path_real);
+					level = hal_util_get_string_from_file (sysfs_path_real, "md/level");
+					if (level == NULL)
+						goto error;
 
-                                                hal_device_property_set_string (d, "storage.vendor", "Linux");
-                                                if (strcmp (level, "linear") == 0) {
-                                                        model_name = g_strdup ("Software RAID (Linear)");
-                                                } else if (strcmp (level, "raid0") == 0) {
-                                                        model_name = g_strdup ("Software RAID-0 (Stripe)");
-                                                } else if (strcmp (level, "raid1") == 0) {
-                                                        model_name = g_strdup ("Software RAID-1 (Mirror)");
-                                                } else if (strcmp (level, "raid5") == 0) {
-                                                        model_name = g_strdup ("Software RAID-5");
-                                                } else {
-                                                        model_name = g_strdup_printf ("Software RAID (%s)", level);
-                                                }
-                                                hal_device_property_set_string (d, "storage.model", model_name);
-                                                g_free (model_name);
+					hal_device_property_set_string (d, "storage.linux_raid.level", level);
+					hal_device_property_set_string (d, "storage.linux_raid.sysfs_path", sysfs_path_real);
+					hal_device_property_set_string (d, "storage.vendor", "Linux");
 
-                                                hal_util_set_string_from_file (
-                                                        d, "storage.firmware_version", 
-                                                        sysfs_path_real, "md/metadata_version");
-                                                
-                                                hal_device_add_capability (d, "storage.linux_raid");
-
-                                                if (!refresh_md_state (d))
-                                                        goto error;
-
-                                                is_hotpluggable = hal_device_property_get_bool (
-                                                        d, "storage.hotpluggable");
-
-					} else if (is_cciss_device) {
-						HAL_DEBUG (("block_add: parent=/org/freedesktop/Hal/devices/computer, is_cciss_device=true"));
-						hal_device_property_set_string (d, "storage.bus", "cciss");
+					if (strcmp (level, "linear") == 0) {
+						model_name = g_strdup ("Software RAID (Linear)");
+					} else if (strcmp (level, "raid0") == 0) {
+						model_name = g_strdup ("Software RAID-0 (Stripe)");
+					} else if (strcmp (level, "raid1") == 0) {
+						model_name = g_strdup ("Software RAID-1 (Mirror)");
+					} else if (strcmp (level, "raid5") == 0) {
+						model_name = g_strdup ("Software RAID-5");
+					} else {
+						model_name = g_strdup_printf ("Software RAID (%s)", level);
 					}
-                                        break;
-                        }
+
+					hal_device_property_set_string (d, "storage.model", model_name);
+					g_free (model_name);
+
+					hal_util_set_string_from_file (d, "storage.firmware_version", sysfs_path_real, "md/metadata_version");
+
+					hal_device_add_capability (d, "storage.linux_raid");
+
+					if (!refresh_md_state (d))
+						goto error;
+
+					is_hotpluggable = hal_device_property_get_bool (d, "storage.hotpluggable");
+
+				} else if (is_cciss_device) {
+					HAL_DEBUG (("block_add: parent=/org/freedesktop/Hal/devices/computer, is_cciss_device=true"));
+					hal_device_property_set_string (d, "storage.bus", "cciss");
+				}
+				break;
+			}
 
 			/* Check info.subsystem */
 			if ((bus = hal_device_property_get_string (d_it, "info.subsystem")) != NULL) {
@@ -1197,12 +1204,14 @@ hotplug_event_begin_add_blockdev (const gchar *sysfs_path, const gchar *device_f
 					scsidev = d_it;
 					physdev = d_it;
 					physdev_udi = udi_it;
+					scsidev_udi = udi_it;
 					hal_device_property_set_string (d, "storage.bus", "scsi");
 					hal_device_copy_property (scsidev, "scsi.lun", d, "storage.lun");
-					/* want to continue here, because it may be USB or IEEE1394 */
-				}
+					is_hotpluggable = hal_device_property_get_bool(scsidev, "scsi.hotpluggable");
+					was_scsi = TRUE;
 
-				if (strcmp (bus, "usb") == 0) {
+					/* want to continue here, because it may be USB or IEEE1394 */
+				} else if (strcmp (bus, "usb") == 0) {
 					physdev = d_it;
 					physdev_udi = udi_it;
 					is_hotpluggable = TRUE;
@@ -1242,14 +1251,25 @@ hotplug_event_begin_add_blockdev (const gchar *sysfs_path, const gchar *device_f
 					physdev_udi = udi_it;
 					is_hotpluggable = TRUE;
 					hal_device_property_set_string (d, "storage.bus", "ccw");
+					break;
 				} else if (strcmp (bus, "vio") == 0) {
 					physdev = d_it;
 					physdev_udi = udi_it;
 					hal_device_property_set_string (d, "storage.bus", "vio");
+					break;
 				} else if (strcmp (bus, "pci") == 0) {
-					physdev = d_it;
-					physdev_udi = udi_it;
-					hal_device_property_set_string (d, "storage.bus", "pci");
+					if (was_scsi) {
+						/* lets assume we are SCSI but not usb or ieee1394 */
+						physdev = scsidev;
+						physdev_udi = scsidev_udi;
+						hal_device_property_set_string (d, "storage.bus", "scsi");
+						break;
+					} else {
+						physdev = d_it;
+						physdev_udi = udi_it;
+						hal_device_property_set_string (d, "storage.bus", "pci");
+						break;
+					}
 				}
 			}
 
@@ -1355,6 +1375,7 @@ hotplug_event_begin_add_blockdev (const gchar *sysfs_path, const gchar *device_f
 				HAL_WARNING (("scsi.type is unknown"));
 				goto error;
 			}
+
 			hal_device_copy_property (parent, "scsi.type", d, "storage.drive_type");
 			hal_device_copy_property (parent, "scsi.vendor", d, "storage.vendor");
 			hal_device_copy_property (parent, "scsi.model", d, "storage.model");
@@ -1425,7 +1446,7 @@ hotplug_event_begin_add_blockdev (const gchar *sysfs_path, const gchar *device_f
 					hal_device_property_set_string (d, "storage.drive_type", "disk");
 				}
 			}
-		}
+		} 
 
 		hal_device_property_set_string (d, "info.category", "storage");
 		hal_device_add_capability (d, "storage");

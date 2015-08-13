@@ -184,8 +184,7 @@ ids_find_pci (int vendor_id, int product_id,
 			 * already */
 			if (*subsys_vendor_name == NULL
 			    && subsys_vendor_id != 0) {
-				if ((*((dbus_uint32_t *) line)) ==
-				    (*((dbus_uint32_t *) rep_svi))) {
+				if (memcmp (line, rep_svi, 4) == 0) {
 					/* found it */
 					for (i = 4; i < line_len; i++) {
 						if (!isspace (line[i]))

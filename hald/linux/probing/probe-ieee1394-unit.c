@@ -253,7 +253,7 @@ handle_request (int fd, struct fw_cdev_event_request *request)
 	
 	send_response (fd, request->handle, RCODE_COMPLETE, NULL, 0);
 	
-	response = (void *) request->data;
+	response = u64_to_ptr(request->data);
 	if (response->frame.cts != CTS_AVC) {
 		HAL_ERROR (("not an fcp response"));
 		return -1;

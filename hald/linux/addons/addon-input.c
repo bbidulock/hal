@@ -228,7 +228,7 @@ event_io (GIOChannel *channel, GIOCondition condition, gpointer data)
 		if (input_data->offset + read_bytes < sizeof (struct input_event)) {
 			input_data->offset = input_data->offset + read_bytes;
 			HAL_DEBUG (("incomplete read"));
-			return TRUE;
+			goto out;
 		} else {
 			input_data->offset = 0;
 		}
@@ -299,6 +299,12 @@ event_io (GIOChannel *channel, GIOCondition condition, gpointer data)
 				}
 			}
 		} else if (input_data->event.type == EV_KEY && key_name[input_data->event.code] != NULL && input_data->event.value) {
+			/* this is a key repeat and should be ignored for the sleep key */
+			if (input_data->event.code == KEY_SLEEP && input_data->event.value == 2) {
+				HAL_INFO (("key release event for KEY_SLEEP, ignoring"));
+				goto out;	
+			}
+
 			libhal_device_emit_condition (ctx, input_data->udi,
 						      "ButtonPressed",
 						      key_name[input_data->event.code],
@@ -307,6 +313,7 @@ event_io (GIOChannel *channel, GIOCondition condition, gpointer data)
 		}
 	}
 
+out:
 	LIBHAL_FREE_DBUS_ERROR (&error);
 
 	return TRUE;
@@ -354,8 +361,15 @@ add_device (LibHalContext *ctx,
 	int eventfp;
 	GIOChannel *channel;
 	InputData *data;
-	int len = strlen (udi);
+	int len;
 	const char* device_file;
+
+	if (udi == NULL) {
+		HAL_ERROR(("udi == NULL"));
+		return;
+	}	
+
+	len = strlen (udi);
 
 	data = (InputData*) g_malloc (sizeof (InputData) + len);
 

@@ -15,7 +15,7 @@ ChangeLog: $(srcdir)/ChangeLog
 $(srcdir)/ChangeLog:
 	@if test -d "$(srcdir)/.git"; then \
 	  (cd "$(srcdir)" && \
-	  ./missing --run git-log --stat) | fmt --split-only > $@.tmp \
+	  ./missing --run git log) | fmt --split-only > $@.tmp \
 	  && mv -f $@.tmp $@ \
 	  || ($(RM) $@.tmp; \
 	      echo Failed to generate ChangeLog, your ChangeLog may be outdated >&2; \
@@ -34,4 +34,4 @@ DISTCLEANFILES = hal.pc hal-storage.pc
 EXTRA_DIST = HACKING hal.pc.in hal-storage.pc.in hal.conf.in ChangeLog
 
 clean-local :
-	rm -f *~
+	rm -f *~ hal-*.tar.bz2 hal-*.tar.gz

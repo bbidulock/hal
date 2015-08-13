@@ -7,7 +7,7 @@ dnl Process this file with autoconf to produce a configure script.
 #
 
 AC_PREREQ(2.59c)
-AC_INIT(hal, 0.5.14, david@fubar.dk)
+AC_INIT(hal, 0.5.15, david@fubar.dk)
 AM_INIT_AUTOMAKE([subdir-objects])
 AM_MAINTAINER_MODE
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
@@ -480,6 +480,9 @@ if test "x$with_libpci" != xno ; then
 fi 
 AM_CONDITIONAL([HAVE_LIBPCI], [test "x$USE_LIBPCI" = "xyes"])
 
+AC_CHECK_HEADERS([linux/videodev.h], [have_videodev_h=yes], [])
+AM_CONDITIONAL(HAVE_V4L1, [test "x$have_videodev_h" = "xyes"])
+
 AC_ARG_WITH([backend],
 	    AS_HELP_STRING([--with-backend=<name>],
 	                   [backend to use (linux/solaris/freebsd/dummy)]),
@@ -508,6 +511,15 @@ AM_CONDITIONAL(HALD_COMPILE_FREEBSD, [test x$HALD_BACKEND = xfreebsd], [Compilin
 AM_CONDITIONAL(HALD_COMPILE_SOLARIS, [test x$HALD_BACKEND = xsolaris], [Compiling for Solaris])
 AC_SUBST(HALD_BACKEND)
 if test "x$HALD_BACKEND" = "xfreebsd"; then
+    AC_SEARCH_LIBS([clock_gettime], [rt])
+    LIBUFS_LIBS=""
+    AC_CHECK_HEADERS([libufs.h],
+		     [AC_CHECK_LIB([libufs], [ufs_disk_fillout], [USE_LIBUFS="yes"], [], [])])
+    if test "x$USE_LIBUFS" = "xyes"; then
+	AC_DEFINE(HAVE_LIBUFS, 1, [Set if we have libufs])
+	LIBUFS_LIBS="-lufs"
+	AC_SUBST(LIBUFS_LIBS)
+    fi
     USE_BSDLIBUSB20=no
     USE_BSDLIBUSB=no
     LIBUSB20_LIBS=""

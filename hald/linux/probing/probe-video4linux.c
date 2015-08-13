@@ -30,7 +30,9 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/ioctl.h>
-#include <libv4l1-videodev.h>
+#ifdef HAVE_LINUX_VIDEODEV_H
+#include <linux/videodev.h>
+#endif
 #include <linux/videodev2.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -50,7 +52,9 @@ main (int argc, char *argv[])
 	int ret = -1;
 	char *udi;
 	char *device_file;
+#ifdef HAVE_LINUX_VIDEODEV_H
 	struct video_capability v1cap;
+#endif
 	struct v4l2_capability v2cap;
 	LibHalContext *ctx = NULL;
 	LibHalChangeSet *cset;
@@ -107,7 +111,9 @@ main (int argc, char *argv[])
 			LIBHAL_FREE_DBUS_ERROR (&error);
 			libhal_device_add_capability (ctx, udi, "video4linux.radio", &error);
 		}
-	} else {
+	}
+#ifdef HAVE_LINUX_VIDEODEV_H
+	else {
 		HAL_DEBUG (("ioctl VIDIOC_QUERYCAP failed"));
 
 		if (ioctl (fd, VIDIOCGCAP, &v1cap) == 0) {
@@ -134,12 +140,11 @@ main (int argc, char *argv[])
 			HAL_DEBUG (("ioctl VIDIOCGCAP failed"));
 		}
 	}
+#endif
 
 	LIBHAL_FREE_DBUS_ERROR (&error);
 	libhal_device_commit_changeset (ctx, cset, &error);
 	libhal_device_free_changeset (cset);
-
-	close (fd);
 
 	ret = 0;
 
