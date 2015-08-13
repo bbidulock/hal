@@ -154,8 +154,7 @@ udev_info_to_hotplug_event (const UdevInfo *info)
 static gboolean
 hal_util_init_sysfs_to_udev_map (void)
 {
-	char *udevdb_export_argv[] = { "/sbin/udevadm", "info", "-e", NULL };
-	char *udevroot_argv[] = { "/sbin/udevadm", "info", "-r", NULL };
+	char *udevdb_export_argv[] = { "/usr/bin/udevadm", "info", "-e", NULL };
 	int udevinfo_exitcode;
 	UdevInfo *info = NULL;
 	char *p;
@@ -163,26 +162,9 @@ hal_util_init_sysfs_to_udev_map (void)
 
 	sysfs_to_udev_map = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, udev_info_free);
 
-	/* get udevroot */
-	if (g_spawn_sync ("/", udevroot_argv, NULL, G_SPAWN_LEAVE_DESCRIPTORS_OPEN, NULL, NULL,
-			  &udevinfo_stdout,
-			  NULL,
-			  &udevinfo_exitcode,
-			  NULL) != TRUE) {
-		HAL_ERROR (("Couldn't invoke %s", udevroot_argv[0]));
-		goto error;
-	}
-	if (udevinfo_exitcode != 0) {
-		HAL_ERROR (("%s returned %d", udevroot_argv[0], udevinfo_exitcode));
-		goto error;
-	}
-
-	g_strlcpy(dev_root, udevinfo_stdout, sizeof(dev_root));
-	p = strchr(dev_root, '\n');
-	if (p != NULL)
-		p[0] = '\0';
-	g_free(udevinfo_stdout);
-	HAL_INFO (("dev_root is %s", dev_root));
+	/* get udevroot - hardcode to /dev to fix udevadm commit 
+	 * http://cgit.freedesktop.org/systemd/systemd/commit/?id=4f5d327a49e1a40ae0a3b8f1855dc90f3c0d953f */
+	g_strlcpy(dev_root, "/dev", sizeof(dev_root));
 
 	/* get udevdb export */
 	if (g_spawn_sync ("/", udevdb_export_argv, NULL, G_SPAWN_LEAVE_DESCRIPTORS_OPEN, NULL, NULL,
