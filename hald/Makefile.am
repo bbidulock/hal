@@ -74,7 +74,7 @@ if HAVE_CONKIT
 hald_SOURCES += ck-tracker.h ck-tracker.c
 endif
 
-hald_LDADD = @GLIB_LIBS@ @DBUS_LIBS@ @POLKIT_LIBS@ -lm @HALD_OS_LIBS@ $(top_builddir)/hald/$(HALD_BACKEND)/libhald_$(HALD_BACKEND).la
+hald_LDADD = @GLIB_LIBS@ @DBUS_LIBS@ @POLKIT_LIBS@ -lm @HALD_OS_LIBS@ $(top_builddir)/hald/$(HALD_BACKEND)/libhald_$(HALD_BACKEND).la @UDEV_LIBS@
 
 #### Init scripts fun
 SCRIPT_IN_FILES=haldaemon.in
