@@ -30,7 +30,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/ioctl.h>
-#include <linux/videodev.h>
+#include <libv4l1-videodev.h>
 #include <linux/videodev2.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -58,6 +58,8 @@ main (int argc, char *argv[])
 
 	setup_logger ();
 
+	dbus_error_init (&error);
+
 	device_file = getenv ("HAL_PROP_VIDEO4LINUX_DEVICE");
 	if (device_file == NULL)
 		goto out;
@@ -66,7 +68,6 @@ main (int argc, char *argv[])
 	if (udi == NULL)
 		goto out;
 
-	dbus_error_init (&error);
 	ctx = libhal_ctx_init_direct (&error);
 	if (ctx == NULL)
 		goto out;

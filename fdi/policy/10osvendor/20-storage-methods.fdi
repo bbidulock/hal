@@ -99,6 +99,11 @@
         </match>
       </match>
 
+      <!-- Hide partitions marked as Compaq Diagnostics -->
+      <match key="volume.partition.type" string="0x12">
+        <merge key="volume.ignore" type="bool">true</merge>
+      </match>
+
       <!-- EFI firmware partitions -->
       <match key="volume.fstype" string="vfat">
 	<match key="volume.label" string="EFI">
