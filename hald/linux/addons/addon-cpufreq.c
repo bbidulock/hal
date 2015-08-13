@@ -32,7 +32,6 @@
 #include <unistd.h>
 #include <signal.h>
 #include <getopt.h>
-#include <glib/gprintf.h>
 
 #include "addon-cpufreq.h"
 #include "addon-cpufreq-userspace.h"

@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <sys/io.h>
 
-#include <glib/gmain.h>
+#include <glib.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 

@@ -39,7 +39,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <glib/gmain.h>
+#include <glib.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 

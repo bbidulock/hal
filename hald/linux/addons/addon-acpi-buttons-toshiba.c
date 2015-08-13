@@ -40,7 +40,7 @@ else
 #include <string.h>
 #include <unistd.h>
 
-#include <glib/gmain.h>
+#include <glib.h>
 
 #include "libhal/libhal.h"
 #include "../../logger.h"

@@ -41,8 +41,7 @@
 #else
   #include <linux/input.h>
 #endif
-#include <glib/gmain.h>
-#include <glib/gprintf.h>
+#include <glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
 #include "libhal/libhal.h"
