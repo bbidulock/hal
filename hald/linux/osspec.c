@@ -123,101 +123,42 @@ hald_udev_data (GIOChannel *source, GIOCondition condition, gpointer user_data)
 	hotplug_event = g_slice_new0 (HotplugEvent);
 	hotplug_event->type = HOTPLUG_EVENT_SYSFS;
 
-	while (bufpos < sizeof (buf)) {
-		size_t keylen;
-		char *key;
-		char *str, *dstr;
+	action = udev_device_get_action(device);
 
-		key = &buf[bufpos];
-		keylen = strlen(key);
-		if (keylen == 0)
-			break;
-		bufpos += keylen + 1;
+	copy_dev_prop_formatted(device, "/sys%s", hotplug_event->sysfs.sysfs_path, sizeof(hotplug_event->sysfs.sysfs_path), "DEVPATH");
+	copy_dev_prop(device, hotplug_event->sysfs.subsystem, sizeof(hotplug_event->sysfs.subsystem), "SUBSYSTEM");
+	copy_dev_prop(device, hotplug_event->sysfs.device_file, sizeof(hotplug_event->sysfs.device_file), "DEVNAME");
 
-		if (strncmp(key, "ACTION=", 7) == 0)
-			action = &key[7];
-		else if (strncmp(key, "DEVPATH=", 8) == 0) {
+	hotplug_event->sysfs.seqnum = get_ll_dev_prop(device, "SEQNUM");
+	hotplug_event->sysfs.net_ifindex = get_ll_dev_prop(device, "IFINDEX");
 
-                        /* md devices are handled via looking at /proc/mdstat */
-                        if (g_str_has_prefix (key + 8, "/block/md")) {
-                                HAL_INFO (("skipping md event for %s", key + 8));
-                                goto invalid;
-                        }
+	copy_dev_prop_formatted(device, "/sys%s", hotplug_event->sysfs.sysfs_path_old, sizeof(hotplug_event->sysfs.sysfs_path_old), "DEVPATH_OLD");
+	copy_dev_prop(device, hotplug_event->sysfs.vendor, sizeof(hotplug_event->sysfs.vendor), "ID_VENDOR");
+	copy_dev_prop(device, hotplug_event->sysfs.model, sizeof(hotplug_event->sysfs.model), "ID_MODEL");
+	copy_dev_prop(device, hotplug_event->sysfs.revision, sizeof(hotplug_event->sysfs.revision), "ID_REVISION");
+	copy_dev_prop(device, hotplug_event->sysfs.serial, sizeof(hotplug_event->sysfs.serial), "ID_SERIAL");
+	copy_dev_prop(device, hotplug_event->sysfs.fsusage, sizeof(hotplug_event->sysfs.fsusage), "ID_FS_USAGE");
+	copy_dev_prop(device, hotplug_event->sysfs.fstype, sizeof(hotplug_event->sysfs.fstype), "ID_FS_TYPE");
+	copy_dev_prop(device, hotplug_event->sysfs.fsversion, sizeof(hotplug_event->sysfs.fsversion), "ID_FS_VERSION");
+	copy_dev_prop(device, hotplug_event->sysfs.fsuuid, sizeof(hotplug_event->sysfs.fsuuid), "ID_FS_UUID");
+	copy_dev_prop(device, hotplug_event->sysfs.fslabel, sizeof(hotplug_event->sysfs.fslabel), "ID_FS_LABEL_ENC");
 
-			g_snprintf (hotplug_event->sysfs.sysfs_path, sizeof (hotplug_event->sysfs.sysfs_path),
-				    "/sys%s", &key[8]);
-		} else if (strncmp(key, "DEVPATH_OLD=", 12) == 0) {
+    /* md devices are handled via looking at /proc/mdstat */
+    if (g_str_has_prefix (hotplug_event->sysfs.sysfs_path, "/sys/block/md")) {
+        HAL_INFO (("skipping md event for %s", hotplug_event->sysfs.sysfs_path));
+        goto invalid;
+    }
+    if (g_str_has_prefix (hotplug_event->sysfs.sysfs_path_old, "/sys/block/md")) {
+        HAL_INFO (("skipping md event for %s", hotplug_event->sysfs.sysfs_path_old));
+        goto invalid;
+    }
 
-                        /* md devices are handled via looking at /proc/mdstat */
-                        if (g_str_has_prefix (key + 12, "/block/md")) {
-                                HAL_INFO (("skipping md event for %s", key + 8));
-                                goto invalid;
-                        }
-
-			g_snprintf (hotplug_event->sysfs.sysfs_path_old, sizeof (hotplug_event->sysfs.sysfs_path_old),
-				    "/sys%s", &key[12]);
-		} else if (strncmp(key, "SUBSYSTEM=", 10) == 0)
-			g_strlcpy (hotplug_event->sysfs.subsystem, &key[10], sizeof (hotplug_event->sysfs.subsystem));
-		else if (strncmp(key, "DEVNAME=", 8) == 0)
-			g_strlcpy (hotplug_event->sysfs.device_file, &key[8], sizeof (hotplug_event->sysfs.device_file));
-		else if (strncmp(key, "SEQNUM=", 7) == 0)
-			hotplug_event->sysfs.seqnum = strtoull(&key[7], NULL, 10);
-		else if (strncmp(key, "IFINDEX=", 8) == 0)
-			hotplug_event->sysfs.net_ifindex = strtoul(&key[8], NULL, 10);
-		else if (strncmp(key, "ID_VENDOR=", 10) == 0) {
-			if ((str = hal_util_strdup_valid_utf8(&key[10])) != NULL ) {
-				g_strlcpy (hotplug_event->sysfs.vendor, str, sizeof(hotplug_event->sysfs.vendor));
-				g_free (str);
-			}
-		} else if (strncmp(key, "ID_MODEL=", 9) == 0) {
-			if ((str = hal_util_strdup_valid_utf8(&key[9])) != NULL ) {
-				g_strlcpy (hotplug_event->sysfs.model, str, sizeof(hotplug_event->sysfs.model));
-				g_free (str);
-			}
-		} else if (strncmp(key, "ID_REVISION=", 12) == 0) {
-			if ((str = hal_util_strdup_valid_utf8(&key[12])) != NULL ) {
-				g_strlcpy (hotplug_event->sysfs.revision, str, sizeof(hotplug_event->sysfs.revision));
-				g_free (str);
-			}
-		} else if (strncmp(key, "ID_SERIAL=", 10) == 0) {
-			if ((str = hal_util_strdup_valid_utf8(&key[10])) != NULL ) {
-				g_strlcpy (hotplug_event->sysfs.serial, str, sizeof(hotplug_event->sysfs.serial));
-				g_free (str);
-			}
-		} else if (strncmp(key, "ID_FS_USAGE=", 12) == 0) {
-			if ((str = hal_util_strdup_valid_utf8(&key[12])) != NULL ) {
-				g_strlcpy (hotplug_event->sysfs.fsusage, str, sizeof(hotplug_event->sysfs.fsusage));
-				g_free (str);
-			}
-		} else if (strncmp(key, "ID_FS_TYPE=", 11) == 0) {
-			if ((str = hal_util_strdup_valid_utf8(&key[11])) != NULL ) {
-				g_strlcpy (hotplug_event->sysfs.fstype, str, sizeof(hotplug_event->sysfs.fstype));
-				g_free (str);
-			}
-		} else if (strncmp(key, "ID_FS_VERSION=", 14) == 0) {
-			if ((str = hal_util_strdup_valid_utf8(&key[14])) != NULL ) {
-				g_strlcpy (hotplug_event->sysfs.fsversion, str, sizeof(hotplug_event->sysfs.fsversion));
-				g_free (str);
-			}
-		} else if (strncmp(key, "ID_FS_UUID=", 11) == 0) {
-			if ((str = hal_util_strdup_valid_utf8(&key[11])) != NULL ) {
-				g_strlcpy (hotplug_event->sysfs.fsuuid, str, sizeof(hotplug_event->sysfs.fsuuid));
-				g_free (str);
-			}
-		} else if (strncmp(key, "ID_FS_LABEL_ENC=", 16) == 0) {
-			dstr = g_malloc0 (keylen - 15);
-			hal_util_decode_escape (&key[16], dstr, sizeof(hotplug_event->sysfs.fslabel));
-
-			if ((str = hal_util_strdup_valid_utf8(dstr)) != NULL ) {
-				g_strlcpy (hotplug_event->sysfs.fslabel, str, sizeof(hotplug_event->sysfs.fslabel));
-				g_free (str);
-			}
-			g_free (dstr);
-		} else if (strncmp(key, "DM_UDEV_DISABLE_OTHER_RULES_FLAG=", 33) == 0) {
-			if (strtoul(&key[33], NULL, 10) == 1) {
-				HAL_INFO (("ignoring device requested by DM udev rules"));
-				goto invalid;
-			}
+	if(hotplug_event->sysfs.fslabel != NULL) {
+		tmp = g_malloc(sizeof(hotplug_event->sysfs.fslabel));
+		hal_util_decode_escape (hotplug_event->sysfs.fslabel, tmp, sizeof(hotplug_event->sysfs.fslabel));
+		if ((tmp1 = hal_util_strdup_valid_utf8(tmp)) != NULL ) {
+			g_strlcpy (hotplug_event->sysfs.fslabel, tmp1, sizeof(hotplug_event->sysfs.fslabel));
+			g_free (tmp1);
 		}
 		g_free(tmp);
 	}
@@ -811,22 +752,6 @@ computer_probing_pm_is_supported_helper_done (HalDevice *d, guint32 exit_type,
 }
 
 static void
-computer_probing_lsb_release_helper_done (HalDevice *d, guint32 exit_type,
-                                          gint return_code, gchar **error,
-                                          gpointer data1, gpointer data2)
-{
-        /* Try and set the suspend/hibernate keys using pm-is-supported
-         */
-        if (g_file_test ("/usr/bin/pm-is-supported", G_FILE_TEST_IS_EXECUTABLE)) {
-                hald_runner_run (d, "hal-system-power-pm-is-supported", NULL, HAL_HELPER_TIMEOUT,
-                                 computer_probing_pm_is_supported_helper_done, NULL, NULL);
-        } else {
-                decode_dmi (d);
-        }
-}
-
-
-static void
 get_primary_videocard (HalDevice *d)
 {
         GDir *dir;
@@ -912,8 +837,14 @@ osspec_probe (void)
         /* set the vendor/product of primary video card */
         get_primary_videocard (root);
 
-        hald_runner_run (root, "hald-probe-lsb-release", NULL, HAL_HELPER_TIMEOUT,
-                         computer_probing_lsb_release_helper_done, NULL, NULL);
+        /* Try and set the suspend/hibernate keys using pm-is-supported
+         */
+        if (g_file_test ("/usr/bin/pm-is-supported", G_FILE_TEST_IS_EXECUTABLE)) {
+                hald_runner_run (root, "hal-system-power-pm-is-supported", NULL, HAL_HELPER_TIMEOUT,
+                                 computer_probing_pm_is_supported_helper_done, NULL, NULL);
+        } else {
+                decode_dmi (root);
+        }
 }
 
 DBusHandlerResult
